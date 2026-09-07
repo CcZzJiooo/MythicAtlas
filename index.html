@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>新山海图志 · 万国山海经 (MythicAtlas)</title>
+    <meta name="description" content="以山海之墨，绘人间万象。重构全球万国奇境与东方神话异志的沉浸式3D水墨古舆图。" />
+    <meta name="mythic-atlas-server" content="1" />
+    
+    <!-- 引入东方笔墨书法与古典字库 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;600;900&family=Zhi+Mang+Xing&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- 3D WebGL 画布容器 -->
+    <div id="webgl-container"></div>
+
+    <!-- 水墨质感噪点遮罩层 -->
+    <div class="ink-grain-overlay"></div>
+
+    <!-- UI 主视口容器 -->
+    <div id="app"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

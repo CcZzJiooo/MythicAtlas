@@ -1,0 +1,7532 @@
+/* ==========================================================================
+   MythicAtlas (新山海图志 · 南粤全境山海经)
+   东方新古典水墨与高精风光长卷设计系统 (Oriental Neo-Classical Landscape Design System)
+   ========================================================================== */
+
+:root {
+  /* 东方色彩 Tokens */
+  --c-void: #080A10;
+  --c-void-pure: #040508;
+  --c-void-card: rgba(14, 18, 26, 0.88);
+  --c-silk: #F5EFE6;
+  --c-silk-dim: #D9CEBA;
+  --c-cinnabar: #D93829;
+  --c-cinnabar-dark: #A92317;
+  --c-cinnabar-glow: rgba(217, 56, 41, 0.45);
+  --c-malachite: #1E5F74;
+  --c-emerald: #2D7A68;
+  --c-gold: #F39C12;
+  --c-gold-bright: #F1C40F;
+  --c-gold-leaf: #D4AF37;
+  --c-gold-glow: rgba(243, 156, 18, 0.35);
+
+  /* 笔墨书法字系 Tokens */
+  --font-brush-bold: 'Ma Shan Zheng', 'Songti SC', cursive, serif;
+  --font-brush-wild: 'Liu Jian Mao Cao', 'Ma Shan Zheng', cursive, serif;
+  --font-brush-flow: 'Long Cang', 'Zhi Mang Xing', cursive, serif;
+  --font-serif: 'Noto Serif SC', 'Songti SC', STSong, serif;
+  --font-en: 'Cinzel Decorative', 'Cinzel', Garamond, serif;
+
+  /* 尺寸与圆角 */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --border-gold: 1px solid rgba(212, 175, 55, 0.3);
+  --border-cinnabar: 1px solid rgba(217, 56, 41, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; /* 允许纵向平滑自然滚动 */
+  scroll-behavior: smooth;
+  background-color: var(--c-void);
+  color: var(--c-silk);
+  font-family: var(--font-serif);
+}
+
+/* 3D 宇宙/沙盘模式下的锁定（杜绝误滚轮或手动下拉唤出画卷） */
+html.hero-scroll-locked,
+body.hero-scroll-locked {
+  overflow: hidden !important;
+  height: 100vh !important;
+  overscroll-behavior: none !important;
+}
+
+/* 3D WebGL Canvas 固定在最底层 */
+#webgl-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+/* 水墨微粒暗角噪点 (完全透明亮眼) */
+.ink-grain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* 页面主体容器 */
+#app {
+  position: relative;
+  width: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.mythic-navbar,
+.hero-hud-card,
+.hero-poem-ribbon,
+.daily-scenic-stage,
+.guangdong-gallery-section,
+.timeline-page-section,
+.passport-page-section,
+.passport-modal-overlay,
+.oracle-drawer-backdrop,
+.oracle-drawer-content {
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   Chapter 0: 【零边框天际金石铭刻 · 纯粹东方气韵】(Borderless Inscriptions HUD)
+   ========================================================================== */
+.celestial-observatory-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 100;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* ==========================================================================
+   【大宋宣和 · 泥金绫绢舒展长卷】(Ancient Unfolding Imperial Silk Handscroll)
+   ========================================================================== */
+.celestial-observatory-hud.imperial-scroll-theme {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 顶部子午金丝赤道标尺 (1px Celestial Meridian Line) */
+.hud-celestial-equator {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.equator-hairline {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.25) 20%, rgba(229, 193, 88, 0.75) 50%, rgba(212, 175, 55, 0.25) 80%, transparent 100%);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+}
+.equator-degree-ticks {
+  position: absolute;
+  top: 0;
+  width: 85%;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.degree-mark {
+  font-family: var(--font-serif);
+  font-size: 8.5px;
+  color: rgba(164, 194, 180, 0.5);
+  letter-spacing: 2.5px;
+  transform: translateY(-2px);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* 宣和御制画轴容器 */
+.imperial-handscroll-wrapper {
+  position: relative;
+  margin: 2px auto 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 95vw;
+  z-index: 100;
+  pointer-events: auto;
+  user-select: none;
+  filter: drop-shadow(0 14px 40px rgba(0, 0, 0, 0.95));
+}
+
+/* 左右白玉轴头与朱砂锦带 */
+.scroll-roller-finial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 2;
+}
+.scroll-roller-finial.left {
+  margin-right: -4px;
+}
+.scroll-roller-finial.right {
+  margin-left: -4px;
+}
+.jade-finial-knob {
+  width: 14px;
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+}
+.knob-cap.gold {
+  width: 14px;
+  height: 6px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #F3E0A2 0%, #D4AF37 50%, #8C6A14 100%);
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.6);
+}
+.knob-body.jade {
+  width: 10px;
+  height: 32px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #DCE6E4 0%, #FFFFFF 50%, #B8CAC6 100%);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.25), 0 0 8px rgba(224, 234, 233, 0.5);
+}
+.cinnabar-silk-ribbon {
+  width: 3.5px;
+  height: 16px;
+  background: linear-gradient(180deg, #C84630 0%, #8C2414 100%);
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 2px 8px rgba(200, 70, 48, 0.8);
+  margin-top: 1px;
+}
+
+/* 宣和御制长卷卷面主体 */
+.imperial-scroll-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(180deg, rgba(32, 22, 16, 0.94) 0%, rgba(16, 11, 8, 0.97) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1.5px solid rgba(229, 193, 88, 0.75);
+  border-bottom: 1.5px solid rgba(229, 193, 88, 0.75);
+  padding: 6px 20px;
+  box-shadow: 0 0 24px rgba(120, 165, 163, 0.2), inset 0 1px 0 rgba(255, 235, 180, 0.35), inset 0 -1px 0 rgba(255, 235, 180, 0.35);
+  position: relative;
+}
+
+/* 2.1 卷首题跋区 */
+.scroll-colophon-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+.ancient-cinnabar-seal {
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #C84630 0%, #8C2414 100%);
+  border: 1.2px solid rgba(255, 230, 180, 0.6);
+  box-shadow: 0 0 16px rgba(200, 70, 48, 0.85), inset 0 0 6px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-brush-bold);
+  font-size: 16px;
+  color: #FFFFFF;
+  font-weight: bold;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.scroll-colophon-section:hover .ancient-cinnabar-seal {
+  transform: rotate(-5deg) scale(1.08);
+  box-shadow: 0 0 20px rgba(200, 70, 48, 1);
+}
+.colophon-text-flow {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.colophon-main-title {
+  font-family: var(--font-brush-bold);
+  font-size: 24px;
+  margin: 0;
+  padding: 0;
+  color: #FFFFFF;
+  letter-spacing: 3.5px;
+  text-shadow: 0 0 16px rgba(120, 165, 163, 0.8), 0 2px 10px rgba(0, 0, 0, 0.95);
+  font-weight: bold;
+}
+.colophon-ephemeris-text {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  color: #A4C2B4;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  margin-top: 2px;
+}
+
+/* 锦绫分割金线 */
+.scroll-silk-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(212, 175, 55, 0.5);
+  font-size: 10px;
+  padding: 0 4px;
+  user-select: none;
+}
+
+/* 2.2 卷中四大章回经纬台 */
+.scroll-chapters-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chapter-silk-dot {
+  color: rgba(212, 175, 55, 0.4);
+  font-size: 14px;
+  pointer-events: none;
+}
+.scroll-chapter-node {
+  background: rgba(16, 26, 24, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 3px;
+  padding: 5px 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  color: rgba(200, 218, 214, 0.75);
+  font-family: var(--font-serif);
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: 1.8px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-chapter-node .chapter-seal-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(120, 165, 163, 0.4);
+  border: 1px solid rgba(224, 234, 233, 0.4);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+.scroll-chapter-node .chapter-rune-char {
+  font-family: var(--font-brush-bold);
+  font-size: 11px;
+  width: 17px;
+  height: 17px;
+  border-radius: 2px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #E5C158;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+.scroll-chapter-node:hover {
+  color: #FFFFFF;
+  background: rgba(120, 165, 163, 0.2);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 12px rgba(120, 165, 163, 0.3);
+}
+.scroll-chapter-node.active {
+  background: linear-gradient(135deg, rgba(200, 70, 48, 0.35) 0%, rgba(45, 18, 14, 0.9) 100%);
+  border-color: #C84630;
+  color: #FFFFFF;
+  box-shadow: 0 0 16px rgba(200, 70, 48, 0.65), inset 0 0 8px rgba(255, 230, 180, 0.25);
+  font-weight: bold;
+}
+.scroll-chapter-node.active .chapter-seal-dot {
+  background: radial-gradient(circle, #FFFFFF 0%, #C84630 65%, #7A1C0E 100%);
+  border-color: #FFFFFF;
+  box-shadow: 0 0 8px #C84630, 0 0 12px rgba(200, 70, 48, 0.9);
+  transform: scale(1.3);
+}
+.scroll-chapter-node.active .chapter-rune-char {
+  background: #C84630;
+  border-color: #FFFFFF;
+  color: #FFFFFF;
+  box-shadow: 0 0 8px rgba(200, 70, 48, 0.8);
+}
+
+/* 2.3 卷尾雅乐玉佩区 */
+.scroll-action-tail {
+  display: flex;
+  align-items: center;
+}
+.scroll-audio-talisman {
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 3px;
+  color: rgba(224, 234, 233, 0.85);
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  padding: 5px 11px;
+  transition: all 0.25s ease;
+}
+.scroll-audio-talisman:hover {
+  color: #FFFFFF;
+  border-color: #E5C158;
+  box-shadow: 0 0 12px rgba(229, 193, 88, 0.4);
+}
+.scroll-audio-talisman.active {
+  color: #FFFFFF;
+  border-color: #C84630;
+  background: rgba(200, 70, 48, 0.25);
+  text-shadow: 0 0 12px #C84630;
+  box-shadow: 0 0 14px rgba(200, 70, 48, 0.6);
+}
+
+/* ==========================================================================
+   大宋宣和御府 · 首屏底部主行动坞 (Hero Bottom Master Actions Dock)
+   严格遵循 cn-culture-atlas 传统活态国色 (朱砂、天水碧、泥金、玄黛) 与 web-design-guidelines
+   ========================================================================== */
+.hero-bottom-actions-dock {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 100;
+  pointer-events: auto;
+  user-select: none;
+  max-width: calc(100vw - 48px);
+}
+
+/* 1. 召唤神兽 / 归还坤舆 底部流光朱砂金符 */
+.hero-beast-summon-bar {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.beast-summon-talisman-btn {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 22px;
+  height: 40px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(200, 70, 48, 0.92) 0%, rgba(140, 36, 20, 0.96) 100%);
+  border: 1.2px solid rgba(255, 230, 180, 0.75);
+  border-radius: 20px;
+  color: #FFFFFF;
+  font-family: var(--font-song), "Songti SC", "SimSun", "Noto Serif SC", serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(200, 70, 48, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.beast-summon-talisman-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85), 0 0 24px rgba(200, 70, 48, 0.85);
+  border-color: #FFFFFF;
+  background: linear-gradient(135deg, rgba(217, 56, 41, 0.96) 0%, rgba(160, 40, 24, 0.98) 100%);
+}
+
+.beast-summon-talisman-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.beast-summon-talisman-btn.beast-active,
+.beast-summon-talisman-btn.active-mode {
+  background: linear-gradient(135deg, rgba(22, 54, 50, 0.94) 0%, rgba(12, 32, 28, 0.98) 100%);
+  border-color: #78A5A3;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.8), 0 0 20px rgba(120, 165, 163, 0.75);
+}
+
+.beast-summon-talisman-btn.beast-active:hover {
+  border-color: #FFFFFF;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.9), 0 0 28px rgba(120, 165, 163, 1);
+}
+
+.talisman-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.talisman-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #FFFDF9;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+.talisman-sub {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 0.8px solid rgba(255, 224, 130, 0.4);
+  border-radius: 10px;
+  color: #FFE082;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* 2. 查看当前画卷 · 宣和玉印金玉胶囊 */
+.hero-scroll-cue {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.scroll-cue-capsule {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px 0 16px;
+  height: 40px;
+  box-sizing: border-box;
+  background: rgba(10, 22, 20, 0.92);
+  border: 1.2px solid rgba(212, 175, 55, 0.55);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), inset 0 0 12px rgba(212, 175, 55, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hero-scroll-cue:hover .scroll-cue-capsule {
+  background: rgba(16, 36, 32, 0.96);
+  border-color: rgba(212, 175, 55, 0.95);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85), 0 0 20px rgba(212, 175, 55, 0.4), inset 0 0 16px rgba(212, 175, 55, 0.25);
+  transform: translateY(-2px);
+}
+
+.hero-scroll-cue:active .scroll-cue-capsule {
+  transform: translateY(0) scale(0.97);
+}
+
+.cue-seal-icon {
+  font-size: 15px;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
+  flex-shrink: 0;
+}
+
+.cue-text {
+  font-family: var(--font-song), "Songti SC", "SimSun", "Noto Serif SC", serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--c-gold-leaf, #e8d08d);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cue-sub-tag {
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #78a5a3;
+  font-family: var(--font-song), serif;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cue-arrow-anim {
+  font-size: 13px;
+  line-height: 1;
+  color: var(--c-gold-bright, #ffd700);
+  margin-left: 2px;
+  animation: bounceDown 1.8s infinite ease-in-out;
+  flex-shrink: 0;
+}
+.beast-summon-talisman-btn .talisman-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+.beast-summon-talisman-btn .talisman-title {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 15.5px;
+  letter-spacing: 1.5px;
+  font-weight: bold;
+}
+.beast-summon-talisman-btn .talisman-sub {
+  font-size: 10px;
+  color: rgba(255, 235, 180, 0.85);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 230, 180, 0.35);
+  letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   Chapter 1: 3D 粤境沙盘首屏 (Hero Stage)
+   ========================================================================== */
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 48px 40px 48px;
+  pointer-events: none;
+}
+
+/* 2D Floating City Tooltip (古雅金丝墨玉简 · 双行主从制) */
+.city-hover-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none !important;
+  user-select: none;
+  background: linear-gradient(135deg, rgba(8, 14, 24, 0.96) 0%, rgba(14, 22, 34, 0.94) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 6px;
+  padding: 10px 18px 10px 18px;
+  transform: translate(-50%, -100%);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.88), inset 0 0 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  transition: opacity 0.15s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 190px;
+}
+
+/* 金丝如意古角标 */
+.city-hover-tooltip .jade-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: #E5C158;
+  border-style: solid;
+  pointer-events: none;
+}
+.city-hover-tooltip .corner-tl {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+  border-top-left-radius: 5px;
+}
+.city-hover-tooltip .corner-tr {
+  top: -1px;
+  right: -1px;
+  border-width: 2px 2px 0 0;
+  border-top-right-radius: 5px;
+}
+.city-hover-tooltip .corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-width: 0 0 2px 2px;
+  border-bottom-left-radius: 5px;
+}
+.city-hover-tooltip .corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+  border-bottom-right-radius: 5px;
+}
+
+/* 第一行：尊名主焦距 (白玉泥金/行楷大字) */
+.city-hover-tooltip .tooltip-title {
+  font-family: var(--font-brush-bold), "Noto Serif SC", "STKaiti", "KaiTi", serif;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1.25;
+  color: #FFFDF9;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  margin: 0;
+  padding: 0;
+}
+
+/* 中间极细金丝渐隐分隔线 */
+.city-hover-tooltip .tooltip-divider {
+  width: 88%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.35) 25%, rgba(212, 175, 55, 0.6) 50%, rgba(212, 175, 55, 0.35) 75%, transparent 100%);
+  margin: 6px auto 7px auto;
+}
+
+/* 第二行：文化属性与专属活态国色 (典雅宋体小字) */
+.city-hover-tooltip .tooltip-crest {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.city-hover-tooltip .tooltip-crest .crest-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.city-hover-tooltip .tooltip-crest .crest-name {
+  line-height: 1;
+}
+
+.city-hover-tooltip .tooltip-footer {
+  font-family: "Noto Serif SC", "STKaiti", serif;
+  font-size: 12px;
+  color: rgba(225, 235, 245, 0.80);
+  letter-spacing: 1.5px;
+  text-align: center;
+}
+
+/* Left Vertical Calligraphy Poem Ribbon */
+.hero-poem-ribbon {
+  position: absolute;
+  left: 54px;
+  top: 130px;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+.solar-seal {
+  writing-mode: vertical-rl;
+  font-family: var(--font-brush-bold);
+  font-size: 15px;
+  letter-spacing: 4px;
+  color: var(--c-cinnabar);
+  border: 1px solid var(--c-cinnabar);
+  padding: 10px 6px;
+  background: rgba(217, 56, 41, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.poem-vertical-text {
+  writing-mode: vertical-rl;
+  display: flex;
+  gap: 16px;
+}
+
+.poem-line {
+  font-family: var(--font-brush-flow);
+  font-size: 24px;
+  letter-spacing: 5px;
+  color: var(--c-silk);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  line-height: 1.4;
+}
+
+/* Center-Left Hero Glass Info Card (Sliding Popup Drawer) */
+.hero-hud-card {
+  position: absolute;
+  left: 70px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-60px);
+  width: 420px;
+  padding: 28px 30px;
+  background: rgba(10, 14, 22, 0.88);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(212, 175, 55, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 50;
+}
+
+.hero-hud-card.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.card-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--c-silk-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card-close-btn:hover {
+  background: var(--c-cinnabar);
+  border-color: var(--c-cinnabar);
+  color: #fff;
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* Minimalist Top Guide Bar */
+.hero-prompt-bar {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: rgba(10, 14, 22, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 30px;
+  color: var(--c-gold-leaf);
+  font-size: 13px;
+  letter-spacing: 1px;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  animation: floatPrompt 3s ease-in-out infinite alternate;
+}
+
+@keyframes floatPrompt {
+  0% { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-50%) translateY(-4px); }
+}
+
+/* Floating 3D Navigation Controls (HUD 浑天缩放仪) */
+.hero-3d-controls {
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.hero-3d-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(10, 14, 22, 0.78);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--c-gold-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(212, 175, 55, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-3d-btn:hover {
+  background: var(--c-gold-bright);
+  color: #06090e;
+  border-color: var(--c-gold-bright);
+  transform: scale(1.12);
+  box-shadow: 0 0 20px var(--c-gold-glow);
+}
+
+.hero-3d-btn .btn-tooltip {
+  position: absolute;
+  right: 56px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 10px;
+  background: rgba(10, 14, 22, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--c-gold-leaf);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.hero-3d-btn:hover .btn-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-4px);
+}
+
+/* ==========================================================================
+   In-Place 3D Scenic Immersion Window (原页 3D 沉浸风光破雾视界)
+   ========================================================================== */
+.scenic-immersion-window {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 60;
+  display: flex;
+  overflow: hidden;
+  background: #06090e;
+  pointer-events: auto;
+  animation: fadeInScenic 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInScenic {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.scenic-photo-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scenic-main-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.05);
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+}
+
+.scenic-vignette-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(to right, rgba(6, 9, 14, 0.88) 0%, rgba(6, 9, 14, 0.45) 45%, rgba(6, 9, 14, 0.9) 100%),
+    linear-gradient(to top, rgba(6, 9, 14, 0.95) 0%, transparent 40%, rgba(6, 9, 14, 0.8) 100%);
+  pointer-events: none;
+}
+
+.scenic-top-bar {
+  position: absolute;
+  top: 84px;
+  left: 48px;
+  right: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 70;
+}
+
+.scenic-location-tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  background: rgba(10, 14, 22, 0.78);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 30px;
+}
+
+.element-pill {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: bold;
+}
+
+.scenic-city-name {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--c-silk);
+}
+
+.scenic-alt-tag {
+  font-size: 12px;
+  color: var(--c-gold-bright);
+}
+
+.return-globe-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(10, 14, 22, 0.88);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid var(--c-gold-bright);
+  color: var(--c-gold-bright);
+  border-radius: 30px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 15px var(--c-gold-glow);
+  transition: all 0.3s ease;
+}
+
+.return-globe-btn:hover {
+  background: var(--c-gold-bright);
+  color: #06090e;
+  transform: translateY(-2px) scale(1.04);
+}
+
+/* Left Vertical Calligraphy in Scenic Immersion */
+.scenic-poem-ribbon {
+  position: absolute;
+  left: 54px;
+  top: 170px;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 14px;
+  z-index: 70;
+  pointer-events: none;
+}
+
+/* Right Floating Dual-Lore Card */
+.scenic-lore-card {
+  position: absolute;
+  right: 54px;
+  top: 150px;
+  width: 520px;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  padding: 28px 32px;
+  background: rgba(10, 14, 22, 0.88);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  z-index: 70;
+}
+
+.scenic-ancient-title {
+  font-family: var(--font-brush-bold);
+  font-size: 36px;
+  color: var(--c-silk);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.scenic-modern-title {
+  font-size: 14px;
+  color: var(--c-gold-leaf);
+  margin-bottom: 16px;
+}
+
+.scenic-dual-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.scenic-lore-block {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.scenic-lore-block.mythic-block {
+  background: rgba(217, 56, 41, 0.08);
+  border-color: rgba(217, 56, 41, 0.3);
+}
+
+.scenic-lore-block.geo-block {
+  background: rgba(45, 122, 104, 0.1);
+  border-color: rgba(45, 122, 104, 0.3);
+}
+
+.lore-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  font-size: 13px;
+  color: var(--c-gold-bright);
+  margin-bottom: 6px;
+}
+
+.lore-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(245, 239, 230, 0.88);
+}
+
+.geo-meta-pill {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--c-gold-leaf);
+}
+
+.scenic-thumbnails-strip {
+  margin-bottom: 18px;
+}
+
+.thumb-label {
+  font-size: 12px;
+  color: var(--c-silk-dim);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.thumb-list {
+  display: flex;
+  gap: 10px;
+}
+
+.thumb-item {
+  width: 72px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.thumb-item.active,
+.thumb-item:hover {
+  border-color: var(--c-gold-bright);
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+.thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scenic-action-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.scenic-stamp-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(217, 56, 41, 0.15);
+  border: 1.5px solid var(--c-cinnabar);
+  color: var(--c-cinnabar);
+  border-radius: 24px;
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.scenic-stamp-btn:hover {
+  background: var(--c-cinnabar);
+  color: var(--c-silk);
+  box-shadow: 0 0 15px var(--c-cinnabar-glow);
+}
+
+.scenic-stamp-btn.stamped {
+  background: rgba(45, 122, 104, 0.2);
+  border-color: var(--c-jade);
+  color: var(--c-jade);
+}
+
+.scenic-seal-box {
+  width: 44px;
+  height: 44px;
+  border: 2px dashed rgba(217, 56, 41, 0.4);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.scenic-seal-box.stamped {
+  border: 2px solid var(--c-cinnabar);
+  background: rgba(217, 56, 41, 0.18);
+  color: var(--c-cinnabar);
+  font-family: var(--font-brush-bold);
+  font-size: 14px;
+  transform: rotate(-5deg) scale(1.1);
+  box-shadow: 0 0 16px var(--c-cinnabar-glow);
+}
+
+.hud-top-tag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.element-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.altitude-tag {
+  font-size: 11.5px;
+  color: var(--c-gold-leaf);
+}
+
+.hud-ancient-title {
+  font-family: var(--font-brush-bold);
+  font-size: 38px;
+  color: var(--c-silk);
+  letter-spacing: 2px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.hud-modern-subtitle {
+  font-size: 14px;
+  color: var(--c-gold-leaf);
+  margin-bottom: 14px;
+}
+
+.hud-geo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--c-silk-dim);
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  border-left: 3px solid var(--c-gold-leaf);
+}
+
+.hud-quick-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(245, 239, 230, 0.85);
+  margin-bottom: 22px;
+}
+
+.hud-btn-group {
+  display: flex;
+  gap: 12px;
+}
+
+.primary-gold-btn {
+  flex: 1;
+  padding: 11px 18px;
+  background: linear-gradient(135deg, var(--c-cinnabar), var(--c-cinnabar-dark));
+  border: 1px solid var(--c-cinnabar);
+  color: var(--c-silk);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 18px var(--c-cinnabar-glow);
+}
+
+.primary-gold-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--c-cinnabar-glow);
+}
+
+.secondary-glass-btn {
+  padding: 11px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: var(--border-gold);
+  color: var(--c-silk);
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.secondary-glass-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--c-gold-bright);
+  color: var(--c-gold-bright);
+}
+
+
+
+/* ==========================================================================
+   Chapter 2: 每日一境 · 真实风光沉浸殿堂 (Daily Destination Stage)
+   ========================================================================== */
+.daily-scenic-stage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 90px 48px;
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 10, 16, 0.95) 15%, var(--c-void) 100%);
+}
+
+.daily-stage-container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.section-badge-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 18px;
+  background: rgba(212, 175, 55, 0.12);
+  border: var(--border-gold);
+  border-radius: 20px;
+  color: var(--c-gold-bright);
+  font-size: 13px;
+  width: fit-content;
+  margin: 0 auto 12px auto;
+}
+
+.section-main-title {
+  text-align: center;
+  font-family: var(--font-brush-bold);
+  font-size: 42px;
+  color: var(--c-silk);
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+
+.section-main-desc {
+  text-align: center;
+  font-size: 15px;
+  color: var(--c-silk-dim);
+  margin-bottom: 36px;
+}
+
+/* ==========================================================================
+   古代走马花灯 3D 悬浮透光画坛 (3D Hollowed-out Floating Lantern Carousel)
+   - 背景完全镂空透明，与山海大地图/宇宙背景融为一体
+   - 走马花灯环形悬浮态：
+          [北面 / 远景]
+     [西面 / 左翼]   [东面 / 右翼]
+          [南面 / 主图]
+     正面主图居中放大，左右两翼照片清晰悬浮在两侧
+   - 支持鼠标跟随 3D 倾角悬浮视差 + 纯手势拖拽滑动旋转
+   ========================================================================== */
+.scenic-lantern-stage {
+  position: relative;
+  width: 100%;
+  min-height: 480px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 10px 0 16px 0;
+  overflow: visible; /* 镂空设计，让左右悬浮卡片自然延展 */
+  background: transparent; /* 完全镂空，杜绝黑色大方框 */
+  border: none;
+  box-shadow: none;
+  user-select: none;
+}
+
+/* 1. 走马花灯 3D 空间交互视口 (强透视、完全镂空透明) */
+.lantern-3d-scene {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+  cursor: grab;
+}
+
+.lantern-3d-scene:active {
+  cursor: grabbing;
+}
+
+/* 2. 走马花灯 3D 环形转盘 (Carousel Ring) */
+.lantern-carousel-ring {
+  position: relative;
+  width: 440px;
+  height: 300px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 3. 走马花灯单面立体卡片 (Facet Card) - 居中自适应宽度 */
+.lantern-facet-card {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: max-content;
+  max-width: 520px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+  cursor: pointer;
+}
+
+/* 4. 镂空泥金画框 (自适应照片天然比例，立轴挺拔、横卷舒展，绝不硬性裁剪) */
+.facet-artwork-frame {
+  position: relative;
+  width: auto;
+  min-width: 180px;
+  max-width: 500px;
+  height: 270px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 14, 24, 0.4); /* 半透明透光 */
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(212, 175, 55, 0.65);
+  border-radius: 6px;
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.8), 
+    0 0 24px rgba(212, 175, 55, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* 正面活动卡片高亮与金芒 */
+.lantern-facet-card.active .facet-artwork-frame {
+  border-color: rgba(255, 223, 110, 0.95);
+  border-width: 1.5px;
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.95), 
+    0 0 40px rgba(212, 175, 55, 0.35);
+  background: rgba(8, 14, 24, 0.2);
+}
+
+.facet-img {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain; /* 遵循自然比例完整呈现，竖屏立轴与横卷自然舒展 */
+  display: block;
+  pointer-events: none;
+}
+
+.facet-inspect-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: rgba(6, 10, 16, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.7);
+  border-radius: 16px;
+  color: var(--c-gold-bright, #F6E05E);
+  font-size: 11px;
+  font-weight: bold;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.25s ease;
+}
+
+.facet-inspect-btn:hover {
+  background: rgba(212, 175, 55, 0.4);
+  color: #FFF;
+  border-color: #FFF;
+}
+
+.facet-label-pill {
+  margin-top: 8px;
+  padding: 3px 14px;
+  background: rgba(14, 20, 30, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--c-silk-dim, #CBD5E0);
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(6px);
+}
+
+.lantern-facet-card.active .facet-label-pill {
+  color: var(--c-gold-bright, #F6E05E);
+  border-color: rgba(212, 175, 55, 0.75);
+}
+
+/* 5. 极简滑动手势指示器 (Swipe Hint) */
+.lantern-swipe-hint {
+  position: absolute;
+  bottom: 0px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(212, 175, 55, 0.6);
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+.lantern-swipe-hint .hint-arrow {
+  font-size: 14px;
+  animation: hintArrowMove 1.8s infinite ease-in-out;
+}
+
+@keyframes hintArrowMove {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.3); opacity: 0.9; }
+}
+
+/* 6. 3D 悬浮金石标题台 */
+.scenic-spatial-pedestal {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 6px 24px;
+  background: linear-gradient(180deg, rgba(16, 24, 38, 0.92) 0%, rgba(8, 12, 18, 0.96) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(212, 175, 55, 0.15);
+  backdrop-filter: blur(12px);
+}
+
+.pedestal-tag-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--c-gold-bright, #F6E05E);
+  font-weight: bold;
+  letter-spacing: 1.5px;
+}
+
+.pedestal-tag-pill .pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #48BB78;
+  box-shadow: 0 0 8px #48BB78;
+  animation: auraPulse 2s infinite ease-in-out;
+}
+
+@keyframes auraPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+.pedestal-title {
+  font-family: var(--font-brush-bold), "Noto Serif SC", serif;
+  font-size: 20px;
+  color: #FFFDF9;
+  letter-spacing: 1.5px;
+  margin: 0;
+  line-height: 1.3;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+
+.pedestal-season {
+  font-size: 12px;
+  color: var(--c-silk-dim, #CBD5E0);
+  letter-spacing: 0.5px;
+}
+
+/* 四角古典如意云纹装饰 */
+.frame-ruyi-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: rgba(212, 175, 55, 0.9);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 3;
+}
+.frame-ruyi-corner.corner-tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+.frame-ruyi-corner.corner-tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+.frame-ruyi-corner.corner-bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+.frame-ruyi-corner.corner-br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+/* 4K 沉浸入画按钮 */
+.fullscreen-inspect-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(6, 10, 16, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.7);
+  border-radius: 20px;
+  color: var(--c-gold-bright, #F6E05E);
+  font-size: 12px;
+  font-weight: bold;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+.fullscreen-inspect-btn:hover {
+  background: rgba(212, 175, 55, 0.35);
+  border-color: #FFF;
+  color: #FFF;
+  transform: translateY(-2px);
+}
+
+/* 3. 仿古手卷轴缩略图条 (Scroll Mounting Deck) */
+.scenic-thumbnails-wrapper.scroll-mounting-deck {
+  position: relative;
+  margin-bottom: 40px;
+  padding: 18px 36px;
+  background: linear-gradient(180deg, rgba(14, 20, 30, 0.85) 0%, rgba(8, 12, 18, 0.95) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.thumb-scroll-rod {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 8px;
+  background: linear-gradient(180deg, #A88938 0%, #D4AF37 50%, #735C1D 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+.thumb-scroll-rod.rod-left { left: 8px; }
+.thumb-scroll-rod.rod-right { right: 8px; }
+
+.thumb-label {
+  font-size: 13px;
+  color: var(--c-gold-leaf, #D4AF37);
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.thumb-list {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.thumb-item {
+  position: relative;
+  flex: 0 0 140px;
+  height: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #000;
+}
+
+.thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.thumb-item:hover img,
+.thumb-item.active img {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.thumb-item.active {
+  border: 2px solid var(--c-gold-bright, #F6E05E);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.75);
+}
+
+.thumb-idx {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-family: monospace;
+  font-size: 10px;
+  color: #FFFDF9;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.panoramic-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 65%, rgba(0, 0, 0, 0.88) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Decorative Ruyi Corners */
+.frame-ruyi-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: rgba(212, 175, 55, 0.85);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 3;
+}
+.frame-ruyi-corner.corner-tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+.frame-ruyi-corner.corner-tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+.frame-ruyi-corner.corner-bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+.frame-ruyi-corner.corner-br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+/* Fullscreen Inspect Button */
+.fullscreen-inspect-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(8, 14, 24, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 20px;
+  color: var(--c-gold-bright, #F6E05E);
+  font-size: 13px;
+  font-weight: bold;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  z-index: 4;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.fullscreen-inspect-btn:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: #FFF;
+  color: #FFF;
+  transform: translateY(-2px);
+}
+
+.panoramic-info-badge {
+  position: absolute;
+  bottom: 20px;
+  left: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.photo-tag {
+  font-size: 12px;
+  color: var(--c-gold-bright);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.photo-title {
+  font-family: var(--font-brush-bold), "Noto Serif SC", serif;
+  font-size: 24px;
+  color: #FFFDF9;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+
+.photo-season {
+  font-size: 13px;
+  color: var(--c-silk-dim, #CBD5E0);
+}
+
+/* Fullscreen Lightbox Modal */
+.daily-scenic-lightbox-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: lightboxFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lightboxFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 8, 14, 0.96);
+  backdrop-filter: blur(24px);
+}
+
+.lightbox-close-btn {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: #FFF;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.25s ease;
+}
+
+.lightbox-close-btn:hover {
+  background: rgba(212, 175, 55, 0.3);
+  transform: rotate(90deg) scale(1.1);
+  border-color: #FFF;
+}
+
+.lightbox-viewport-container {
+  position: relative;
+  z-index: 5;
+  max-width: 90vw;
+  max-height: 78vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-main-img {
+  max-width: 90vw;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.lightbox-bottom-card {
+  position: relative;
+  z-index: 5;
+  margin-top: 16px;
+  text-align: center;
+  background: rgba(8, 14, 24, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: var(--radius-md);
+  padding: 12px 28px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+.lightbox-badge-gold {
+  font-size: 11px;
+  color: var(--c-gold-bright, #F6E05E);
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.lightbox-caption {
+  font-family: var(--font-brush-bold), "Noto Serif SC", serif;
+  font-size: 20px;
+  color: #FFFDF9;
+  margin: 0 0 4px 0;
+}
+
+.lightbox-meta {
+  font-size: 13px;
+  color: var(--c-silk-dim, #CBD5E0);
+  margin: 0;
+}
+
+/* Multi-Photo Thumbnail Strip */
+.scenic-thumbnails-wrapper {
+  margin-bottom: 40px;
+  padding: 16px 24px;
+  background: rgba(18, 22, 32, 0.7);
+  border: var(--border-gold);
+  border-radius: var(--radius-md);
+}
+
+.thumb-label {
+  font-size: 13px;
+  color: var(--c-gold-leaf);
+  margin-bottom: 10px;
+}
+
+.thumb-list {
+  display: flex;
+  gap: 16px;
+}
+
+.thumb-item {
+  position: relative;
+  width: 120px;
+  height: 75px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb-item:hover, .thumb-item.active {
+  border-color: var(--c-gold-bright);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px var(--c-gold-glow);
+}
+
+.thumb-idx {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: #FFF;
+}
+
+/* Dual-Lore Columns */
+.dual-lore-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+.lore-col {
+  padding: 28px;
+  background: var(--c-void-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.col-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+  padding-bottom: 12px;
+}
+
+.col-header h3 {
+  font-family: var(--font-brush-bold);
+  font-size: 22px;
+  color: var(--c-gold-leaf);
+}
+
+.lore-poem-box {
+  background: rgba(217, 56, 41, 0.08);
+  border-left: 3px solid var(--c-cinnabar);
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.poem-text {
+  font-family: var(--font-brush-flow);
+  font-size: 19px;
+  color: var(--c-silk);
+  line-height: 1.6;
+}
+
+.lore-body-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--c-silk-dim);
+  margin-bottom: 20px;
+}
+
+/* Guardian Beast Card */
+.guardian-spirit-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.guardian-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.guardian-icon {
+  font-size: 32px;
+}
+
+.guardian-name {
+  font-family: var(--font-brush-bold);
+  font-size: 18px;
+  color: var(--c-gold-bright);
+}
+
+.guardian-title {
+  font-size: 12px;
+  color: var(--c-silk-dim);
+  font-weight: normal;
+}
+
+.guardian-power {
+  font-size: 12px;
+  color: var(--c-silk-dim);
+  margin-top: 2px;
+}
+
+.guardian-quote {
+  font-size: 12.5px;
+  font-style: italic;
+  color: rgba(245, 239, 230, 0.7);
+  line-height: 1.5;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+/* Real Geo Column */
+.geo-fact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.geo-row {
+  display: flex;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.geo-key {
+  color: var(--c-gold-leaf);
+  min-width: 90px;
+}
+
+.geo-val {
+  color: var(--c-silk);
+}
+
+.real-history-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--c-silk-dim);
+  margin-bottom: 24px;
+}
+
+/* Interactive Stamp Box */
+.stamp-interactive-box {
+  background: rgba(217, 56, 41, 0.08);
+  border: 1px solid var(--c-cinnabar);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stamp-display-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.seal-stamp-visual {
+  width: 72px;
+  height: 72px;
+  border: 2px solid var(--c-cinnabar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.seal-stamp-visual.stamped-active {
+  background: rgba(217, 56, 41, 0.2);
+  box-shadow: 0 0 20px var(--c-cinnabar-glow);
+  transform: rotate(-4deg) scale(1.05);
+}
+
+.seal-script {
+  font-family: var(--font-brush-bold);
+  font-size: 18px;
+  writing-mode: vertical-rl;
+  letter-spacing: 2px;
+}
+
+.stamp-desc strong {
+  font-family: var(--font-brush-bold);
+  font-size: 16px;
+  color: var(--c-silk);
+}
+
+.stamp-desc p {
+  font-size: 12px;
+  color: var(--c-silk-dim);
+  margin-top: 4px;
+}
+
+.stamp-trigger-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--c-cinnabar);
+  border: none;
+  color: #FFF;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px var(--c-cinnabar-glow);
+}
+
+.stamp-trigger-btn:hover {
+  background: var(--c-cinnabar-dark);
+  transform: translateY(-2px);
+}
+
+.stamp-trigger-btn.stamped {
+  background: #2D7A68;
+  box-shadow: 0 4px 16px rgba(45, 122, 104, 0.4);
+}
+
+/* Traveler Note Journal */
+.traveler-note-box {
+  background: var(--c-void-card);
+  border: var(--border-gold);
+  border-radius: var(--radius-lg);
+  padding: 24px 32px;
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: var(--c-gold-leaf);
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.note-tip {
+  font-size: 12px;
+  color: var(--c-silk-dim);
+  font-weight: normal;
+}
+
+.note-textarea {
+  width: 100%;
+  height: 100px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  color: var(--c-silk);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+}
+
+.note-textarea:focus {
+  border-color: var(--c-gold-bright);
+  box-shadow: 0 0 12px var(--c-gold-glow);
+}
+
+.note-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.save-note-btn {
+  padding: 8px 18px;
+  background: rgba(212, 175, 55, 0.15);
+  border: var(--border-gold);
+  color: var(--c-gold-bright);
+  border-radius: 20px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-note-btn:hover {
+  background: var(--c-gold-bright);
+  color: #000;
+}
+
+.save-hint {
+  font-size: 13px;
+  color: #48BB78;
+}
+
+/* ==========================================================================
+   Chapter 3: 岭南画廊 · 廿一地市全域风光 (Gallery Stage)
+   ========================================================================== */
+.gallery-section {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 90px 48px;
+}
+
+.gallery-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.continent-filter-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.filter-tab-btn {
+  background: rgba(18, 22, 32, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: var(--c-silk-dim);
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.filter-tab-btn:hover {
+  color: var(--c-gold-bright);
+  border-color: var(--c-gold-bright);
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.filter-tab-btn.active {
+  background: var(--c-gold-bright);
+  color: #000;
+  font-weight: bold;
+  border-color: var(--c-gold-bright);
+  box-shadow: 0 4px 18px var(--c-gold-glow);
+}
+
+/* 21 Cities Grid */
+.scenic-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 28px;
+}
+
+.scenic-card {
+  background: var(--c-void-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.scenic-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--c-gold-leaf);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px var(--c-gold-glow);
+}
+
+.card-img-wrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.scenic-card:hover .card-img {
+  transform: scale(1.08);
+}
+
+.card-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(14, 18, 26, 0.95) 100%);
+}
+
+.card-element-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.card-stamped-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(217, 56, 41, 0.9);
+  color: #FFF;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.card-guardian-floating {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.g-icon {
+  font-size: 14px;
+}
+
+.g-name {
+  font-size: 11px;
+  color: var(--c-gold-bright);
+}
+
+.card-content {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card-top-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.card-city-badge {
+  font-size: 12px;
+  color: var(--c-gold-leaf);
+  font-weight: bold;
+}
+
+.card-tag {
+  font-size: 11px;
+  color: var(--c-silk-dim);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.card-ancient-title {
+  font-family: var(--font-brush-bold);
+  font-size: 24px;
+  color: var(--c-silk);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.card-modern-title {
+  font-size: 13px;
+  color: var(--c-silk-dim);
+  margin-bottom: 12px;
+}
+
+.card-poem-snippet {
+  font-family: var(--font-brush-flow);
+  font-size: 15px;
+  color: rgba(245, 239, 230, 0.75);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.card-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.card-season {
+  font-size: 11.5px;
+  color: var(--c-silk-dim);
+}
+
+.card-fly-btn {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--c-gold-bright);
+  padding: 5px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-fly-btn:hover {
+  background: var(--c-gold-bright);
+  color: #000;
+}
+
+/* ==========================================================================
+   Chapter 4: 往昔舆图 · 岁时星象廊 (Timeline Stage)
+   ========================================================================== */
+.timeline-page-section {
+  position: relative;
+  width: 100%;
+  padding: 90px 48px;
+}
+
+.timeline-countdown-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: rgba(217, 56, 41, 0.12);
+  border: 1px solid var(--c-cinnabar);
+  border-radius: 20px;
+  color: var(--c-silk);
+  font-size: 13px;
+  margin-top: 14px;
+}
+
+.timeline-countdown-box strong {
+  color: var(--c-cinnabar);
+  font-family: monospace;
+  font-size: 15px;
+}
+
+.timeline-nodes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.timeline-node-card {
+  padding: 16px;
+  background: var(--c-void-card);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.timeline-node-card:hover {
+  border-color: var(--c-gold-bright);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px var(--c-gold-glow);
+}
+
+.timeline-node-card.today-highlight {
+  border-color: var(--c-cinnabar);
+  background: rgba(217, 56, 41, 0.15);
+  box-shadow: 0 0 20px var(--c-cinnabar-glow);
+}
+
+.timeline-node-card.locked {
+  opacity: 0.55;
+}
+
+.node-date-tag {
+  font-size: 11px;
+  color: var(--c-gold-leaf);
+  margin-bottom: 6px;
+}
+
+.node-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.node-title {
+  font-family: var(--font-brush-bold);
+  font-size: 16px;
+  color: var(--c-silk);
+}
+
+.node-sub {
+  font-size: 11px;
+  color: var(--c-silk-dim);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   Chapter 5: 山海通鉴 · 通关文牒印谱 (Passport Stage)
+   ========================================================================== */
+.passport-section {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 90px 48px 120px 48px;
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 10, 16, 0.98) 20%, var(--c-void-pure) 100%);
+}
+
+.passport-container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.passport-progress-bar-wrapper {
+  width: 100%;
+  max-width: 600px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin: 0 auto 40px auto;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.passport-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-gold-leaf), var(--c-cinnabar));
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* 21 City Stamps Grid */
+.passport-stamps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  margin-bottom: 50px;
+}
+
+.stamp-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  background: var(--c-void-card);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.seal-box {
+  width: 68px;
+  height: 68px;
+  border: 2px solid var(--c-cinnabar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.4);
+  margin-bottom: 10px;
+}
+
+.stamp-slot.unlocked .seal-box {
+  background: rgba(217, 56, 41, 0.12);
+  box-shadow: 0 0 16px var(--c-cinnabar-glow);
+}
+
+.seal-text {
+  font-family: var(--font-brush-bold);
+  font-size: 16px;
+  writing-mode: vertical-rl;
+}
+
+.lock-icon {
+  font-size: 20px;
+}
+
+.stamp-slot-city {
+  font-family: var(--font-brush-bold);
+  font-size: 14px;
+  color: var(--c-silk);
+}
+
+.stamp-slot-name {
+  font-size: 11px;
+  color: var(--c-silk-dim);
+  margin-top: 2px;
+}
+
+/* Poster Action Box */
+.passport-poster-action-box {
+  text-align: center;
+  padding: 36px;
+  background: rgba(18, 22, 32, 0.8);
+  border: 1px solid var(--c-gold-leaf);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+}
+
+.generate-poster-btn {
+  padding: 16px 36px;
+  background: linear-gradient(135deg, var(--c-cinnabar), var(--c-cinnabar-dark));
+  border: 1px solid var(--c-gold-bright);
+  color: #FFF;
+  font-family: var(--font-brush-bold);
+  font-size: 20px;
+  letter-spacing: 2px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  box-shadow: 0 8px 32px var(--c-cinnabar-glow);
+  transition: all 0.3s ease;
+}
+
+.generate-poster-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 40px var(--c-cinnabar-glow);
+}
+
+.poster-tip {
+  font-size: 13px;
+  color: var(--c-silk-dim);
+  margin-top: 14px;
+}
+
+/* Poster Modal */
+.passport-poster-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+}
+
+.modal-card {
+  position: relative;
+  z-index: 10;
+  width: 90vw;
+  max-width: 680px;
+  max-height: 90vh;
+  background: #141824;
+  border: 1px solid var(--c-gold-leaf);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9);
+}
+
+.modal-header {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.modal-header h3 {
+  font-family: var(--font-brush-bold);
+  font-size: 20px;
+  color: var(--c-gold-bright);
+}
+
+.close-modal-btn {
+  background: transparent;
+  border: none;
+  color: var(--c-silk);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modal-canvas-wrap {
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.modal-canvas-wrap canvas {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.download-poster-btn {
+  padding: 12px 28px;
+  background: var(--c-cinnabar);
+  border: none;
+  color: #FFF;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 18px var(--c-cinnabar-glow);
+}
+
+.download-poster-btn:hover {
+  background: var(--c-cinnabar-dark);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   天象神谕推演器 (Oracle Drawer)
+   ========================================================================== */
+.oracle-panel {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 200;
+  width: 320px;
+  background: rgba(14, 18, 26, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--c-gold-leaf);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px var(--c-gold-glow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.oracle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-brush-bold);
+  font-size: 17px;
+  color: var(--c-gold-bright);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding-bottom: 8px;
+}
+
+.oracle-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.oracle-btn {
+  flex: 1;
+  padding: 6px 4px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--c-silk);
+  font-size: 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.oracle-btn:hover {
+  background: var(--c-gold-bright);
+  color: #000;
+}
+
+/* Element Styles */
+.element-gold { background: rgba(212, 175, 55, 0.2); color: #F1C40F; border: 1px solid #F1C40F; }
+.element-wood { background: rgba(45, 122, 104, 0.25); color: #48BB78; border: 1px solid #48BB78; }
+.element-water { background: rgba(30, 95, 116, 0.3); color: #4FD1C5; border: 1px solid #4FD1C5; }
+.element-fire { background: rgba(217, 56, 41, 0.2); color: #FC8181; border: 1px solid #FC8181; }
+.element-earth { background: rgba(196, 125, 59, 0.25); color: #ECC94B; border: 1px solid #ECC94B; }
+
+/* ==========================================================================
+   东方鎏金游龙光标跟随系统 (Custom Cursor & Stardust Trail)
+   ========================================================================== */
+.custom-cursor-dot {
+  position: fixed;
+  top: -4px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  background: #FAF089;
+  box-shadow: 0 0 10px #FAF089, 0 0 20px #D4AF37;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transition: transform 0.05s linear;
+}
+
+.custom-cursor-ring {
+  position: fixed;
+  top: -20px;
+  left: -20px;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.35);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transition: width 0.3s cubic-bezier(0.2, 1, 0.3, 1), 
+              height 0.3s cubic-bezier(0.2, 1, 0.3, 1),
+              border-color 0.3s ease,
+              background-color 0.3s ease;
+}
+
+.custom-cursor-ring.hovering {
+  width: 58px;
+  height: 58px;
+  top: -29px;
+  left: -29px;
+  border-color: #FAF089;
+  background: rgba(212, 175, 55, 0.12);
+  box-shadow: 0 0 24px rgba(246, 173, 85, 0.6);
+}
+
+.custom-cursor-ring.clicking {
+  width: 32px;
+  height: 32px;
+  top: -16px;
+  left: -16px;
+  border-color: #D93829;
+  background: rgba(217, 56, 41, 0.2);
+}
+
+.cursor-trail-particle {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  background: #FAF089;
+  box-shadow: 0 0 8px #D4AF37;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99997;
+  animation: cursorTrailFade 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes cursorTrailFade {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(0.2) translate(0, 10px); opacity: 0; }
+}
+
+/* ==========================================================================
+   三重视界切换与 HUD 遥测系统 (3D Dimension Switcher & Telemetry)
+   ========================================================================== */
+.nav-dimension-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(8, 10, 16, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  padding: 4px;
+  border-radius: 30px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dimension-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 20px;
+  color: var(--c-silk-dim);
+  font-family: var(--font-serif);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dimension-nav-btn:hover {
+  color: #FFF;
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.dimension-nav-btn.active {
+  background: linear-gradient(135deg, #D4AF37, #B7791F);
+  color: #040508;
+  font-weight: bold;
+  box-shadow: 0 2px 12px rgba(212, 175, 55, 0.5);
+}
+
+/* Audio Visualizer */
+.audio-spectrum-container {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 4px;
+}
+
+.nav-visualizer-slot {
+  display: flex;
+  align-items: center;
+}
+.nav-visualizer-slot canvas {
+  width: 56px;
+  height: 16px;
+  display: block;
+}
+
+/* Hero Telemetry HUD - Borderless Celestial Inscription (Zero Box) */
+.hero-telemetry-hud {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-label {
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  color: rgba(164, 194, 180, 0.7);
+  letter-spacing: 1.5px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.hud-val {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(224, 234, 233, 0.9);
+  font-family: var(--font-serif);
+  letter-spacing: 1px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+
+.hud-val.gold {
+  color: #E5C158;
+  text-shadow: 0 0 8px rgba(229, 193, 88, 0.6);
+}
+
+.hud-divider {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(120, 165, 163, 0.4);
+  box-shadow: 0 0 4px rgba(120, 165, 163, 0.5);
+}
+
+
+
+.talisman-icon {
+  font-size: 14px;
+}
+
+.talisman-title {
+  font-size: 13.5px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: #FFF8E1;
+}
+
+.talisman-sub {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 0.8px solid rgba(255, 224, 130, 0.3);
+  border-radius: 10px;
+  color: #FFE082;
+}
+
+.beast-summon-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: rgba(217, 56, 41, 0.85);
+  border: 1px solid #FAF089;
+  border-radius: 20px;
+  color: #FFF;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.beast-summon-pill-btn:hover {
+  background: #E53E3E;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(217, 56, 41, 0.5);
+}
+
+.scenic-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Scenic Photo Caption Badge & Card Tags */
+.scenic-photo-caption-badge {
+  position: absolute;
+  left: 48px;
+  bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(6, 9, 14, 0.82);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 24px;
+  color: var(--c-gold-leaf);
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  z-index: 65;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 12px rgba(212, 175, 55, 0.2);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.scenic-photo-caption-badge .caption-icon {
+  font-size: 14px;
+}
+
+.scenic-photo-caption-badge .caption-text {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.thumb-caption-mini {
+  display: none;
+}
+
+.card-caption-tag {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 4px 10px;
+  background: rgba(6, 9, 14, 0.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--c-gold-leaf);
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* =========================================================================
+   东方星象秘卷 · 二十八星宿神话图鉴与天官弹窗 (Lunar Mansion Modal)
+   ========================================================================= */
+.lunar-mansion-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.78);
+  backdrop-filter: blur(16px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: mansionFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mansionFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.mansion-scroll-card {
+  position: relative;
+  width: 540px;
+  max-width: 95vw;
+  max-height: 88vh;
+  background: linear-gradient(145deg, rgba(14, 18, 28, 0.95), rgba(8, 10, 16, 0.98));
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.15);
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  color: var(--c-silk);
+  font-family: var(--font-serif);
+}
+
+.mansion-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--c-gold-bright);
+  pointer-events: none;
+}
+.mansion-corner.top-left { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.mansion-corner.top-right { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+.mansion-corner.bottom-left { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+.mansion-corner.bottom-right { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+.mansion-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--c-silk-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+.mansion-close-btn:hover {
+  background: rgba(217, 56, 41, 0.2);
+  border-color: var(--c-cinnabar);
+  color: var(--c-silk);
+  transform: rotate(90deg);
+}
+
+.mansion-header {
+  margin-bottom: 20px;
+}
+
+.mansion-beast-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border: 1px solid;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mansion-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mansion-seal-box {
+  width: 52px;
+  height: 52px;
+  border: 2px solid;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.mansion-seal-box .seal-char {
+  font-family: var(--font-brush-bold);
+  font-size: 28px;
+}
+
+.mansion-names .mansion-ancient-name {
+  font-family: var(--font-brush-bold);
+  font-size: 32px;
+  color: var(--c-gold-bright);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.mansion-meta-tags {
+  display: flex;
+  gap: 10px;
+}
+
+.mansion-meta-tags .meta-tag {
+  font-size: 11.5px;
+  color: var(--c-silk-dim);
+  background: rgba(212, 175, 55, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.mansion-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mansion-section-block {
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: var(--radius-md);
+}
+
+.mansion-section-block .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--c-gold-leaf);
+  margin-bottom: 6px;
+}
+
+.mansion-section-block .section-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(245, 239, 230, 0.88);
+}
+
+.mansion-section-block .section-text.highlight {
+  color: var(--c-gold-bright);
+  font-weight: 500;
+}
+
+.mansion-section-block.fenye-block {
+  background: rgba(45, 122, 104, 0.1);
+  border-color: rgba(45, 122, 104, 0.3);
+}
+
+.mansion-section-block.lore-block {
+  background: rgba(217, 56, 41, 0.06);
+  border-color: rgba(217, 56, 41, 0.25);
+}
+
+.mansion-section-block .lore-quote {
+  font-style: italic;
+  color: rgba(245, 239, 230, 0.95);
+}
+
+.mansion-action-footer {
+  display: flex;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.mansion-nav-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 24px;
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mansion-nav-btn.city-btn {
+  background: rgba(212, 175, 55, 0.15);
+  border: 1.5px solid var(--c-gold-bright);
+  color: var(--c-gold-bright);
+}
+.mansion-nav-btn.city-btn:hover {
+  background: var(--c-gold-bright);
+  color: #06090E;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px);
+}
+
+.mansion-nav-btn.beast-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid var(--c-gold-leaf);
+  color: var(--c-silk);
+}
+.mansion-nav-btn.beast-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Chapter 1.4: 【汝窑天青 · 孤品无字玉衡度规】(Ru Ware Celadon Minimalist Celestial Gauge)
+   ========================================================================== */
+.astrolabe-floating-scale {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  user-select: none;
+  pointer-events: auto;
+  padding: 0;
+  /* 彻底去除所有笨重外框、嵌套底盒与尖角，100% 空灵融入星汉 */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+}
+
+.astrolabe-floating-scale.gauge-transition-hidden,
+.diorama-floating-scale.gauge-transition-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-50%) scale(0.94) !important;
+}
+
+/* 1. 顶部朱砂小印与天青流光微印 (Minimalist Cinnabar Seal & Celadon Glow) */
+.celadon-seal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 0;
+  line-height: 1;
+}
+.celadon-seal-header .cinnabar-talisman-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #C84630;
+  box-shadow: 0 0 6px rgba(200, 70, 48, 0.9);
+}
+.celadon-seal-header .celadon-seal-glyph {
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #E0EAE9;
+  text-shadow: 0 0 8px rgba(120, 165, 163, 0.8), 0 0 16px rgba(120, 165, 163, 0.4);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+/* 2. 居中步进天青玉珠：＋ / － (Celadon Stepper Beads) */
+.celadon-stepper-bead {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(16, 32, 29, 0.85);
+  border: 1px solid rgba(120, 165, 163, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), inset 0 0 6px rgba(120, 165, 163, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #E0EAE9;
+  padding: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.celadon-stepper-bead .bead-glyph {
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1;
+  color: #E0EAE9;
+  text-shadow: 0 0 6px rgba(224, 234, 233, 0.8);
+}
+.celadon-stepper-bead:hover {
+  background: rgba(24, 48, 44, 0.95);
+  border-color: #78A5A3;
+  box-shadow: 0 0 12px rgba(120, 165, 163, 0.7), inset 0 0 8px rgba(224, 234, 233, 0.3);
+  transform: scale(1.15);
+}
+
+/* 3. 【汝窑天青流光刻度轨】(Celadon Light Gauge Spine) */
+.celadon-gauge-track {
+  position: relative;
+  width: 64px;
+  height: 220px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  touch-action: none;
+}
+
+/* 居中天青翡翠流光轴 */
+.track-celadon-spine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #A4C2B4 0%, #78A5A3 50%, #447C76 100%);
+  box-shadow: 0 0 6px rgba(120, 165, 163, 0.6);
+  border-radius: 1px;
+}
+.track-moon-glow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2.5px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #E0EAE9 0%, #78A5A3 100%);
+  box-shadow: 0 0 10px rgba(224, 234, 233, 0.8);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* 对称双翼月白周天刻度 (Symmetrical Moon-White Graduation Wings) */
+.track-symmetrical-wings {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.wing-tick.major {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 1px;
+  background: rgba(120, 165, 163, 0.6);
+}
+.wing-tick.minor {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 1px;
+  background: rgba(164, 194, 180, 0.25);
+}
+
+/* 四大宏大境界天青玉牌 (Symmetrical Celadon Stations) */
+.celadon-station {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  padding: 2px 0;
+  transition: all 0.25s ease;
+}
+.celadon-station .station-jade-bead {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #162B28;
+  border: 1px solid rgba(120, 165, 163, 0.7);
+  box-shadow: 0 0 4px rgba(120, 165, 163, 0.4);
+  transition: all 0.25s ease;
+}
+.celadon-station .station-seal-name {
+  position: absolute;
+  left: 20px;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  color: rgba(200, 214, 213, 0.75);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+
+.celadon-station:hover .station-jade-bead,
+.celadon-station.active .station-jade-bead {
+  background: #78A5A3;
+  border-color: #E0EAE9;
+  box-shadow: 0 0 8px #78A5A3, 0 0 14px rgba(224, 234, 233, 0.6);
+  transform: scale(1.4);
+}
+.celadon-station:hover .station-seal-name,
+.celadon-station.active .station-seal-name {
+  color: #FFFFFF;
+  text-shadow: 0 0 8px #78A5A3, 0 0 14px rgba(224, 234, 233, 0.8);
+  transform: translateX(2px);
+  font-weight: bold;
+  opacity: 1;
+}
+
+/* 4. 【天青双环璇玑流光游标 · 左数右名对称微印】(Celadon Double-Ring Reticle Thumb) */
+.celadon-reticle-cursor {
+  position: absolute;
+  left: 50%;
+  top: 0%;
+  transform: translate(-50%, -50%);
+  z-index: 25;
+  cursor: grab;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.celadon-reticle-cursor:active {
+  cursor: grabbing;
+}
+.celadon-reticle-cursor .cursor-ring.outer {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.2px solid #78A5A3;
+  box-shadow: 0 0 8px rgba(120, 165, 163, 0.8);
+  animation: reticleSpin 12s linear infinite;
+}
+.celadon-reticle-cursor .cursor-ring.inner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px dashed rgba(224, 234, 233, 0.75);
+}
+.celadon-reticle-cursor .cursor-cinnabar-pearl {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 0%, #C84630 65%, #6B1D11 100%);
+  box-shadow: 0 0 8px rgba(200, 70, 48, 0.9);
+  transition: transform 0.15s ease;
+}
+.celadon-reticle-cursor .cursor-reticle-cross {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: rgba(224, 234, 233, 0.8);
+  box-shadow: 0 0 4px #E0EAE9;
+  pointer-events: none;
+}
+
+/* 左翼实时高精视距数字 (距离中轴左侧 20px，绝不与刻度或游标重叠) */
+.celadon-reticle-cursor .cursor-left-metric {
+  position: absolute;
+  right: calc(50% + 20px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-weight: bold;
+  color: #A4C2B4;
+  text-shadow: 0 0 8px rgba(120, 165, 163, 0.85), 0 1px 4px rgba(0, 0, 0, 0.95);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+/* 右翼当前实时境界小篆名 (距离中轴右侧 20px) */
+.celadon-reticle-cursor .cursor-right-tier {
+  position: absolute;
+  left: calc(50% + 20px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #E0EAE9;
+  text-shadow: 0 0 8px rgba(120, 165, 163, 0.85), 0 0 16px rgba(224, 234, 233, 0.6);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.celadon-reticle-cursor:hover .cursor-cinnabar-pearl,
+.celadon-reticle-cursor:active .cursor-cinnabar-pearl {
+  transform: scale(1.4);
+  box-shadow: 0 0 12px #C84630, 0 0 6px #FFFFFF;
+}
+.celadon-reticle-cursor:hover .cursor-left-metric,
+.celadon-reticle-cursor:active .cursor-left-metric {
+  color: #FFFFFF;
+  text-shadow: 0 0 10px #78A5A3, 0 0 14px #E0EAE9;
+}
+.celadon-reticle-cursor:hover .cursor-right-tier,
+.celadon-reticle-cursor:active .cursor-right-tier {
+  color: #FFFFFF;
+  text-shadow: 0 0 12px #78A5A3, 0 0 18px #E0EAE9;
+}
+
+/* 5. 孤品天青司南星规 (Celadon Astrolabe Compass) */
+.celadon-sinan-compass {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.celadon-sinan-compass .celadon-sinan-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 4px rgba(120, 165, 163, 0.5));
+}
+.celadon-sinan-compass .sinan-celadon-spoon {
+  transform-origin: 16px 16px;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.celadon-sinan-compass:hover .sinan-celadon-spoon {
+  transform: rotate(-18deg);
+}
+.celadon-sinan-compass:active .sinan-celadon-spoon {
+  transform: rotate(0deg) scale(1.1);
+}
+.celadon-sinan-compass:hover {
+  transform: scale(1.15);
+}
+
+/* ==========================================================================
+   Chapter 1.4B: 【紫檀嵌金 · 地官勘舆营造量地矩尺】(Sandalwood Gold-Inlaid Topographical Luban Gauge)
+   专属于万象沙盘，通透悬浮、金丝准绳、翡翠定水珠、八角金扣，去除厚重冗杂
+   ========================================================================== */
+.diorama-floating-scale {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  user-select: none;
+  pointer-events: auto;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+}
+
+/* 当名山导览坞展开时，量地矩尺平滑左移避让至 390px，零遮挡共存！ */
+.diorama-floating-scale.dock-expanded {
+  right: 390px;
+}
+
+/* 1. 顶部朱砂小印与地官勘舆铭文 */
+.sandalwood-seal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 2px 0;
+  line-height: 1;
+}
+.sandalwood-seal-header .cinnabar-square-stamp {
+  font-family: var(--font-serif);
+  font-size: 8px;
+  font-weight: bold;
+  color: #FFFFFF;
+  background: #C84630;
+  width: 11px;
+  height: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 1.5px;
+  box-shadow: 0 0 6px rgba(200, 70, 48, 0.9);
+}
+.sandalwood-seal-header .sandalwood-seal-glyph {
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #FFE082;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.8), 0 0 16px rgba(212, 175, 55, 0.4);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+/* 2. 居中步进紫檀八角金钮：＋ / － */
+.sandalwood-octagonal-bead {
+  width: 24px;
+  height: 24px;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+  background: rgba(26, 15, 11, 0.9);
+  border: 1px solid rgba(212, 175, 55, 0.65);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.65), inset 0 0 6px rgba(212, 175, 55, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #FFE082;
+  padding: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sandalwood-octagonal-bead .bead-glyph {
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+  color: #FFE082;
+  text-shadow: 0 0 6px rgba(255, 224, 130, 0.8);
+}
+.sandalwood-octagonal-bead:hover {
+  background: rgba(45, 25, 18, 0.95);
+  border-color: #FFF2B2;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.85), inset 0 0 8px rgba(255, 224, 130, 0.4);
+  transform: scale(1.15);
+}
+
+/* 3. 【紫檀金丝营造量地槽规】 */
+.sandalwood-gauge-track {
+  position: relative;
+  width: 64px;
+  height: 220px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  touch-action: none;
+}
+
+/* 居中紫檀泥金流光轴 */
+.track-sandalwood-spine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #FFE082 0%, #D4AF37 50%, #8C6D37 100%);
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.6);
+  border-radius: 1px;
+}
+.track-gold-glow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2.5px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFE082 50%, #D4AF37 100%);
+  box-shadow: 0 0 10px rgba(255, 224, 130, 0.85);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* 左侧：营造长短刻度线 */
+.track-contour-graduations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.track-contour-graduations .ruler-tick {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.2s ease;
+}
+.track-contour-graduations .ruler-tick.major {
+  width: 14px;
+  height: 1px;
+  background: #D4AF37;
+  box-shadow: 0 0 4px rgba(212, 175, 55, 0.8);
+}
+.track-contour-graduations .ruler-tick.minor {
+  width: 8px;
+  height: 1px;
+  background: rgba(212, 175, 55, 0.35);
+}
+
+/* 五大地貌推演站点：严格 25% 黄金等距 (探微/城邑/名山/省域/大案) */
+.sandalwood-station {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  padding: 2px 0;
+  transition: all 0.25s ease;
+}
+.sandalwood-station .station-brass-stud {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1C120D;
+  border: 1px solid rgba(212, 175, 55, 0.75);
+  box-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
+  transition: all 0.25s ease;
+}
+.sandalwood-station .station-seal-name {
+  position: absolute;
+  left: 20px;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  color: rgba(255, 224, 130, 0.75);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+  white-space: nowrap;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+
+.sandalwood-station:hover .station-brass-stud,
+.sandalwood-station.active .station-brass-stud {
+  background: #D4AF37;
+  border-color: #FFF2B2;
+  box-shadow: 0 0 8px #D4AF37, 0 0 14px rgba(255, 224, 130, 0.65);
+  transform: scale(1.4);
+}
+.sandalwood-station:hover .station-seal-name {
+  color: #FFFFFF;
+  text-shadow: 0 0 8px #D4AF37, 0 0 14px rgba(255, 224, 130, 0.85);
+  transform: translateX(2px);
+  font-weight: bold;
+}
+.sandalwood-station.active .station-seal-name {
+  opacity: 0;
+}
+
+/* 4. 【紫檀金错卡尺游标 · 翡翠定水珠与左数右名】 */
+.sandalwood-reticle-cursor {
+  position: absolute;
+  left: 50%;
+  top: 0%;
+  transform: translate(-50%, -50%);
+  z-index: 25;
+  cursor: grab;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sandalwood-reticle-cursor:active {
+  cursor: grabbing;
+}
+.caliper-emerald-bubble {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #7FFFD4 0%, #2E8B57 70%, #0F4028 100%);
+  border: 1px solid #D4AF37;
+  box-shadow: 0 0 8px rgba(80, 200, 120, 0.8), inset 0 0 4px #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+.bubble-ruby-core {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #C84630;
+  box-shadow: 0 0 4px #FF4500;
+}
+
+/* 左翼实时高精视距数字 */
+.sandalwood-reticle-cursor .cursor-left-metric {
+  position: absolute;
+  right: calc(50% + 20px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-weight: bold;
+  color: #FFE082;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.85), 0 1px 4px rgba(0, 0, 0, 0.95);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+/* 右翼当前实时境界小篆名 */
+.sandalwood-reticle-cursor .cursor-right-tier {
+  position: absolute;
+  left: calc(50% + 20px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #FFF2B2;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.85), 0 0 16px rgba(255, 224, 130, 0.6);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.sandalwood-reticle-cursor:hover .caliper-emerald-bubble,
+.sandalwood-reticle-cursor:active .caliper-emerald-bubble {
+  transform: scale(1.3);
+  box-shadow: 0 0 12px #50C878, inset 0 0 6px #FFFFFF;
+}
+.sandalwood-reticle-cursor:hover .cursor-left-metric,
+.sandalwood-reticle-cursor:active .cursor-left-metric {
+  color: #FFFFFF;
+  text-shadow: 0 0 10px #D4AF37, 0 0 14px #FFE082;
+}
+.sandalwood-reticle-cursor:hover .cursor-right-tier,
+.sandalwood-reticle-cursor:active .cursor-right-tier {
+  color: #FFFFFF;
+  text-shadow: 0 0 12px #D4AF37, 0 0 18px #FFE082;
+}
+
+/* 6. 【地官八卦定水罗盘】 */
+.sandalwood-bagua-compass {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sandalwood-bagua-compass .bagua-compass-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+}
+.sandalwood-bagua-compass .bagua-magnetic-pointer {
+  transform-origin: 18px 18px;
+  transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.sandalwood-bagua-compass:hover .bagua-magnetic-pointer {
+  transform: rotate(-24deg);
+}
+.sandalwood-bagua-compass:active .bagua-magnetic-pointer {
+  transform: rotate(0deg) scale(1.15);
+}
+.sandalwood-bagua-compass:hover {
+  transform: scale(1.15);
+}
+
+/* ==========================================================================
+   Chapter 1.4C: 【舆地透镜 · 观象图谱】(Diorama Topographic Lens & Layer Master Hub)
+   ========================================================================== */
+.diorama-layer-selector {
+  position: fixed;
+  left: 24px;
+  top: 88px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 272px;
+  box-sizing: border-box;
+  padding: 14px 14px 12px;
+  background: linear-gradient(175deg, rgba(22, 15, 12, 0.95) 0%, rgba(13, 9, 8, 0.97) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 235, 180, 0.20), inset 0 0 18px rgba(212, 175, 55, 0.05);
+  backdrop-filter: blur(16px) saturate(180%);
+  user-select: none;
+  pointer-events: auto;
+  transform-origin: left center;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.diorama-layer-selector.gauge-transition-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+}
+
+.diorama-layer-selector.panel-3d-folded {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: perspective(1200px) rotateY(-20deg) translateX(calc(-100% - 36px)) scale(0.95) !important;
+  filter: brightness(0.6) blur(2px) !important;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.32, 1, 0.23, 1), filter 0.28s ease;
+}
+
+/* 顶栏：璇玑窥镜徽印 + 泥金题名 + 折叠灵扣 */
+.layer-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-bottom: 2px;
+}
+
+.layer-selector-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-emblem-badge,
+.legend-emblem-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(184, 46, 30, 0.5), 0 0 6px rgba(212, 175, 55, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+.header-emblem-badge:hover,
+.legend-emblem-badge:hover {
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 0 4px 12px rgba(184, 46, 30, 0.7), 0 0 12px rgba(255, 224, 130, 0.6);
+}
+
+.header-emblem-badge svg,
+.legend-emblem-badge svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.cinnabar-square-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #B82E1E 0%, #8A1A0E 100%);
+  border: 1px solid #FFE082;
+  border-radius: 4px;
+  color: #FFFDF9;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(184, 46, 30, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  line-height: 1;
+}
+
+.layer-selector-header .header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.layer-selector-header .selector-title {
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  font-weight: bold;
+  color: #FFE082;
+  letter-spacing: 1.8px;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+  line-height: 1.2;
+}
+
+.layer-selector-header .selector-sub {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: rgba(212, 175, 55, 0.75);
+  letter-spacing: 0.8px;
+  line-height: 1.2;
+}
+
+.header-right-actions,
+.legend-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 华夏金石透雕经折合页扣 (Gilt Hinged Clasp) */
+.panel-fold-clasp,
+.panel-fold-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: linear-gradient(135deg, rgba(46, 28, 22, 0.92) 0%, rgba(20, 14, 11, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 6px;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 235, 180, 0.3), inset 0 0 6px rgba(212, 175, 55, 0.15);
+  transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.panel-fold-clasp:hover,
+.panel-fold-btn:hover {
+  background: linear-gradient(135deg, rgba(184, 46, 30, 0.85) 0%, rgba(88, 48, 32, 0.95) 100%);
+  border-color: #FFE082;
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.panel-fold-clasp:active,
+.panel-fold-btn:active {
+  transform: scale(0.92);
+}
+
+.panel-fold-clasp .clasp-svg {
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.panel-fold-clasp:hover .clasp-svg {
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 3px #FFE082);
+}
+
+.header-filigree-badge {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: rgba(212, 175, 55, 0.65);
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 175, 55, 0.20);
+}
+
+/* 一、四时晨昏 · 日晷仪轨 (2x2 四象方阵，大空间呼吸感，零逼仄) */
+.sundial-sub-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sundial-section-eyebrow,
+.thematic-section-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 1px;
+}
+
+.sundial-section-eyebrow .eyebrow-icon,
+.thematic-section-eyebrow .eyebrow-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.sundial-section-eyebrow .eyebrow-text,
+.thematic-section-eyebrow .eyebrow-text {
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: rgba(212, 175, 55, 0.82);
+  letter-spacing: 1px;
+}
+
+.sundial-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.sundial-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  background: rgba(32, 22, 18, 0.65);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.sundial-btn:hover {
+  background: rgba(52, 34, 26, 0.85);
+  border-color: rgba(212, 175, 55, 0.55);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.sundial-btn.active {
+  background: linear-gradient(135deg, rgba(184, 46, 30, 0.82) 0%, rgba(148, 96, 32, 0.85) 100%);
+  border-color: #FFE082;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.sundial-btn .sundial-glyph {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+.sundial-btn .sundial-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sundial-btn .sundial-label {
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #FFFDF9;
+  letter-spacing: 0.8px;
+  line-height: 1.2;
+}
+
+.sundial-btn .sundial-sub {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  color: rgba(240, 230, 210, 0.70);
+  letter-spacing: 0.4px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.sundial-btn.active .sundial-sub {
+  color: #FFE082;
+}
+
+/* 分割线 */
+.layer-selector-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.35) 50%, transparent 100%);
+  margin: 2px 0;
+}
+
+/* 二、山海专题 · 六维图谱 (2x3 中正对称网格) */
+.thematic-layers-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.layer-selector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.layer-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid rgba(212, 175, 55, 0.20);
+  border-radius: 6px;
+  background: rgba(30, 20, 16, 0.60);
+  color: rgba(240, 230, 210, 0.85);
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.layer-tab .tab-glyph {
+  font-size: 13px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.layer-tab .tab-label {
+  letter-spacing: 0.8px;
+  font-weight: 500;
+}
+
+.layer-tab:hover {
+  background: rgba(48, 32, 24, 0.88);
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.layer-tab.active {
+  background: linear-gradient(135deg, rgba(184, 46, 30, 0.75) 0%, rgba(46, 104, 85, 0.75) 100%);
+  border-color: #FFE082;
+  color: #FFFFFF;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* ==========================================================================
+   Chapter 1.4D: 【营造法式 · 分层设色高程与要素图例】(Hypsometric Relief Legend)
+   ========================================================================== */
+.diorama-hypsometric-legend {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 284px;
+  max-width: calc(100vw - 48px);
+  box-sizing: border-box;
+  padding: 13px 14px 12px;
+  background: linear-gradient(175deg, rgba(22, 15, 12, 0.95) 0%, rgba(13, 9, 8, 0.97) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 235, 180, 0.20), inset 0 0 18px rgba(212, 175, 55, 0.05);
+  backdrop-filter: blur(16px) saturate(180%);
+  user-select: none;
+  pointer-events: auto;
+  transform-origin: left center;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.diorama-hypsometric-legend.gauge-transition-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
+.diorama-hypsometric-legend.panel-3d-folded {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: perspective(1200px) rotateY(-20deg) translateX(calc(-100% - 36px)) scale(0.95) !important;
+  filter: brightness(0.6) blur(2px) !important;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.32, 1, 0.23, 1), filter 0.28s ease;
+}
+
+.legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.legend-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.legend-header .legend-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #B82E1E 0%, #8A1A0E 100%);
+  border: 1px solid #FFE082;
+  border-radius: 4px;
+  color: #FFFDF9;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(184, 46, 30, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  line-height: 1;
+}
+
+.legend-header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.legend-header .legend-title {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: bold;
+  color: #FFE082;
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.legend-header .legend-sub {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: rgba(212, 175, 55, 0.72);
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.legend-unit-tag {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: rgba(212, 175, 55, 0.65);
+  letter-spacing: 0.5px;
+}
+
+.legend-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-scale-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.legend-color-pillar {
+  width: 10px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.40);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.7);
+  flex-shrink: 0;
+}
+
+.legend-color-pillar .color-step {
+  flex: 1;
+  min-height: 15px;
+  display: block;
+}
+
+.color-step.step-summit {
+  background: linear-gradient(180deg, #EAC870 0%, #783214 100%);
+}
+.color-step.step-high-mountain {
+  background: #AA5E28;
+}
+.color-step.step-low-mountain {
+  background: #D09440;
+}
+.color-step.step-foothill {
+  background: #B2CE5A;
+}
+.color-step.step-plain {
+  background: #52A66C;
+}
+.color-step.step-coast {
+  background: #DFCE9C;
+}
+.color-step.step-ocean {
+  background: linear-gradient(180deg, #38BDF8 0%, #0284C7 50%, #0369A1 100%);
+}
+
+.legend-ticks-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tick-tier {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.25;
+}
+
+.tick-tier .tick-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: #FFE082;
+  min-width: 44px;
+  letter-spacing: -0.2px;
+}
+
+.tick-tier .tick-tag {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.1;
+  flex-shrink: 0;
+}
+
+.tick-tier .tick-tag.summit {
+  background: rgba(245, 224, 138, 0.2);
+  color: #F5E08A;
+  border: 1px solid rgba(245, 224, 138, 0.4);
+}
+.tick-tier .tick-tag.high-mtn {
+  background: rgba(170, 94, 40, 0.35);
+  color: #E8A870;
+  border: 1px solid rgba(232, 168, 112, 0.35);
+}
+.tick-tier .tick-tag.hill {
+  background: rgba(208, 148, 64, 0.25);
+  color: #F0B86E;
+  border: 1px solid rgba(240, 184, 110, 0.35);
+}
+.tick-tier .tick-tag.plain {
+  background: rgba(82, 166, 108, 0.25);
+  color: #8AD4A2;
+  border: 1px solid rgba(138, 212, 162, 0.35);
+}
+.tick-tier .tick-tag.coast {
+  background: rgba(223, 206, 156, 0.25);
+  color: #EEDDB2;
+  border: 1px solid rgba(238, 221, 178, 0.35);
+}
+.tick-tier .tick-tag.ocean {
+  background: rgba(2, 132, 199, 0.35);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+}
+
+.tick-tier .tick-geo {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: rgba(240, 230, 210, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.legend-spatial-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(212, 175, 55, 0.25);
+}
+
+.spatial-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.30);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.spatial-badge {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.spatial-card.land .spatial-badge {
+  background: rgba(170, 94, 40, 0.3);
+  color: #E8A870;
+  border: 1px solid rgba(232, 168, 112, 0.3);
+}
+
+.spatial-card.sea .spatial-badge {
+  background: rgba(2, 132, 199, 0.40);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+}
+
+.spatial-desc {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: rgba(240, 230, 210, 0.82);
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   Chapter 1.4D-2: 【3D 华夏金石提梁令牌 · 经折装收放仪轨】(Imperial Suspended Tally Dock)
+   ========================================================================== */
+.diorama-tally-dock,
+.diorama-docked-tab {
+  position: fixed;
+  left: 10px;
+  top: 92px;
+  z-index: 92;
+  width: 34px;
+  height: 84px;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  perspective: 600px;
+  transform-style: preserve-3d;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0.4) translateX(-20px) rotateY(-30deg);
+  transition: opacity 0.26s cubic-bezier(0.2, 0.9, 0.3, 1),
+              transform 0.32s cubic-bezier(0.18, 1.25, 0.3, 1);
+}
+
+.diorama-tally-dock.tally-dock-legend,
+.diorama-docked-tab.docked-legend-tab {
+  top: auto;
+  bottom: 28px;
+}
+
+.diorama-tally-dock.gauge-transition-hidden,
+.diorama-docked-tab.gauge-transition-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateX(-25px) scale(0.6) !important;
+}
+
+/* 破茧浮现激活态 (Elastic Bloom) */
+.diorama-tally-dock.docked-tab-active,
+.diorama-docked-tab.docked-tab-active {
+  opacity: 1 !important;
+  transform: scale(1) translateX(0) rotateY(12deg) !important;
+}
+
+/* 提梁金纽 (Suspension Bail Loop) */
+.tally-suspension-loop {
+  width: 24px;
+  height: 8px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: -1px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* 玉牌主体雕饰 */
+.tally-plaque-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 76px;
+  padding: 5px 3px 4px;
+  box-sizing: border-box;
+  background: linear-gradient(175deg, rgba(42, 24, 18, 0.98) 0%, rgba(18, 12, 10, 0.99) 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.65);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.85),
+              inset 0 1px 1px rgba(255, 235, 180, 0.5),
+              inset 0 0 10px rgba(0, 0, 0, 0.8),
+              0 0 8px rgba(212, 175, 55, 0.25);
+  backdrop-filter: blur(16px);
+  transform-origin: left center;
+  transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* 3D 悬浮交互：迎向视线仰角伸展、金光流萤 */
+.diorama-tally-dock:hover .tally-plaque-body,
+.diorama-docked-tab:hover .tally-plaque-body {
+  transform: rotateY(0deg) translateX(6px) scale(1.06);
+  border-color: #FFE082;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.95),
+              0 0 18px rgba(212, 175, 55, 0.65),
+              inset 0 1px 2px rgba(255, 255, 255, 0.7);
+  background: linear-gradient(175deg, rgba(62, 34, 26, 0.99) 0%, rgba(26, 16, 13, 0.99) 100%);
+}
+
+.diorama-tally-dock:hover .tally-suspension-loop,
+.diorama-docked-tab:hover .tally-suspension-loop {
+  transform: translateX(4px) translateY(-1.5px);
+}
+
+.tally-emblem-halo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 4px rgba(255, 224, 130, 0.7));
+}
+
+.tally-inscription {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-weight: bold;
+  color: #FFE082;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  text-shadow: 0 1px 0 rgba(255, 235, 180, 0.6), 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.tally-kinetic-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: kineticArrowPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes kineticArrowPulse {
+  0%, 100% { transform: translateX(0); opacity: 0.8; }
+  50% { transform: translateX(2.5px); opacity: 1; filter: drop-shadow(0 0 4px #FFE082); }
+}
+
+/* 悬浮展开侧滑丝绸卷标 (Slide-out Silk Ribbon) */
+.tally-slide-ribbon {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(4px) scale(0.9);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(38, 22, 16, 0.96) 0%, rgba(18, 12, 10, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8), 0 0 12px rgba(212, 175, 55, 0.3);
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.24s ease, transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tally-slide-ribbon .ribbon-glyph {
+  font-size: 8px;
+  color: #FFE082;
+}
+
+.tally-slide-ribbon .ribbon-text {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: bold;
+  color: #FFFDF9;
+  letter-spacing: 1.2px;
+}
+
+.diorama-tally-dock:hover .tally-slide-ribbon,
+.diorama-docked-tab:hover .tally-slide-ribbon {
+  opacity: 1;
+  transform: translateY(-50%) translateX(10px) scale(1);
+}
+
+/* ==========================================================================
+   Chapter 1.4E: 【山海地契小卷】(Diorama Info Scroll Card)
+   ========================================================================== */
+.diorama-info-card {
+  position: fixed;
+  left: 308px;
+  top: 88px;
+  z-index: 92;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 290px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(16, 12, 10, 0.94) 0%, rgba(8, 14, 16, 0.94) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), inset 0 0 16px rgba(212, 175, 55, 0.12);
+  backdrop-filter: blur(12px);
+  user-select: none;
+  pointer-events: auto;
+  animation: dioramaInfoSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dioramaInfoSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.diorama-info-card .info-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 6px;
+}
+
+.diorama-info-card .header-seal-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.diorama-info-card .seal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  background: #C84630;
+  color: #FFFDF9;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(200, 70, 48, 0.6);
+}
+
+.diorama-info-card .seal-title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: bold;
+  color: #FFFDF9;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(255, 224, 130, 0.6);
+}
+
+.diorama-info-card .info-close-btn {
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: rgba(255, 224, 130, 0.7);
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.diorama-info-card .info-close-btn:hover {
+  background: rgba(200, 70, 48, 0.4);
+  color: #FFFDF9;
+  border-color: #C84630;
+}
+
+.diorama-info-card .info-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diorama-info-card .info-card-subtitle {
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  color: #48D1CC;
+  line-height: 1.4;
+}
+
+.diorama-info-card .info-card-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.diorama-info-card .meta-pill {
+  padding: 3px 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 4px;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: rgba(240, 230, 210, 0.85);
+}
+
+.diorama-info-card .meta-pill strong {
+  color: #FFE082;
+}
+
+.diorama-info-card .info-card-desc {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  color: rgba(240, 230, 210, 0.78);
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* ==========================================================================
+   Chapter 1.4F: 【名山百岳 · 舆地神岳全景导览坞】(Mountain Navigator Dock & Tally)
+   ========================================================================== */
+.diorama-mountain-dock {
+  position: fixed;
+  right: 24px;
+  top: 88px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 350px;
+  max-height: calc(100vh - 160px);
+  box-sizing: border-box;
+  padding: 14px 14px 12px;
+  background: linear-gradient(175deg, rgba(24, 16, 12, 0.96) 0%, rgba(12, 8, 8, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.42);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 235, 180, 0.22), inset 0 0 18px rgba(212, 175, 55, 0.06);
+  backdrop-filter: blur(16px) saturate(180%);
+  user-select: none;
+  pointer-events: auto;
+  transform-origin: right center;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.diorama-mountain-dock.gauge-transition-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+}
+
+.diorama-mountain-dock.panel-3d-folded {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: perspective(1200px) rotateY(20deg) translateX(calc(100% + 36px)) scale(0.95) !important;
+  filter: brightness(0.6) blur(2px) !important;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.32, 1, 0.23, 1), filter 0.28s ease;
+}
+
+.mountain-dock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+}
+
+.mountain-dock-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mountain-dock-emblem {
+  font-size: 18px;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(255, 224, 130, 0.5));
+}
+
+.mountain-dock-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.mountain-dock-title {
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #FFFDF9;
+  text-shadow: 0 0 10px rgba(255, 224, 130, 0.5);
+}
+
+.mountain-dock-sub {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: rgba(212, 175, 55, 0.72);
+  letter-spacing: 0.5px;
+}
+
+/* 区域筛选标签 */
+.mountain-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 2px 0 4px;
+}
+
+.mountain-filter-btn {
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  border-radius: 4px;
+  color: rgba(240, 230, 210, 0.80);
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.mountain-filter-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+  color: #FFE082;
+  border-color: rgba(212, 175, 55, 0.45);
+}
+
+.mountain-filter-btn.active {
+  background: linear-gradient(135deg, rgba(184, 46, 30, 0.85) 0%, rgba(138, 26, 14, 0.85) 100%);
+  color: #FFFDF9;
+  border-color: #FFE082;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(184, 46, 30, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* 名山卡片滚动列表 (弹性自适应与绝对防挤压) */
+.mountain-cards-track {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 6px 8px 5px; /* 预留四周充足的 4px~8px 安全呼吸区，确保卡片阴影与左侧雅金边框 100% 完整可见，永不被容器裁切 */
+  max-height: calc(100vh - 280px);
+  min-height: 0;
+  flex: 1 1 auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  contain: content; /* 开启渲染层级隔离，阻断列表滚动与名片交互对祖先主容器的重排重绘 */
+}
+
+.mountain-cards-track::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mountain-cards-track::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 2px;
+}
+
+.mountain-cards-track::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 224, 130, 0.60);
+}
+
+.mountain-card-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-left: 3px solid rgba(212, 175, 55, 0.35); /* 预置 3px 左侧金线标尺，避免 hover/active 时边框宽度突变引发内容重排抖动 */
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  flex-shrink: 0; /* 🚨 彻底根治图二被挤压成扁平黑条的恶性 Bug！ */
+  min-height: 68px; /* 确保每张卡片拥有充沛、舒适、雅致的文字排版高度 */
+  box-sizing: border-box;
+  contain: layout style;
+  will-change: transform;
+}
+
+.mountain-card-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(212, 175, 55, 0.65);
+  border-left-color: #FFE082; /* 雅金标尺瞬间通透亮起，高贵庄重 */
+  transform: translateY(-1.5px); /* 优雅微浮雕轻盈升起 1.5px，绝不向左位移，彻底根治左边框被遮挡隐藏缺陷！ */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55), 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.mountain-card-item.active {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.20) 0%, rgba(32, 22, 18, 0.92) 100%);
+  border-color: #FFE082;
+  border-left-color: #FFE082;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7), 0 0 14px rgba(255, 224, 130, 0.35);
+}
+
+.mountain-card-item .card-item-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 10% 50%, rgba(255, 224, 130, 0.12), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.mountain-card-item:hover .card-item-glow {
+  opacity: 1;
+}
+
+.mountain-card-item.active .card-item-glow {
+  opacity: 1;
+  background: radial-gradient(circle at 12% 50%, rgba(255, 224, 130, 0.22), transparent 80%);
+}
+
+.card-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+
+.card-item-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.card-peak-tier {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.card-peak-tier.tier-highest {
+  background: rgba(184, 46, 30, 0.35);
+  color: #FF8A80;
+  border: 1px solid rgba(255, 138, 128, 0.4);
+}
+
+.card-peak-tier.tier-celebrated {
+  background: rgba(212, 175, 55, 0.25);
+  color: #FFE082;
+  border: 1px solid rgba(255, 224, 130, 0.35);
+}
+
+.card-peak-tier.tier-scenic {
+  background: rgba(78, 205, 196, 0.25);
+  color: #80DEEA;
+  border: 1px solid rgba(128, 222, 234, 0.35);
+}
+
+.card-peak-city {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  color: #FFE082;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+.card-peak-elem {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  color: rgba(240, 230, 210, 0.70);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.card-peak-alt {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: bold;
+  color: #81D4FA;
+  margin-left: auto;
+  text-shadow: 0 0 6px rgba(129, 212, 250, 0.4);
+}
+
+.card-item-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.card-item-title {
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  font-weight: bold;
+  color: #FFFDF9;
+  letter-spacing: 0.8px;
+}
+
+.card-item-range {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: rgba(240, 230, 210, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.card-item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.card-item-geology {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  color: rgba(240, 230, 210, 0.60);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  max-width: 190px;
+}
+
+.card-item-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: #FFE082;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.mountain-card-item:hover .card-item-action {
+  opacity: 1;
+  color: #FFFDF9;
+}
+
+.mountain-card-item.active .card-item-action .fly-text {
+  color: #81D4FA;
+  font-weight: bold;
+}
+
+.card-item-action .fly-icon {
+  font-size: 8px;
+  opacity: 0.75;
+  transform: translateX(0);
+  transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+}
+
+.mountain-card-item:hover .card-item-action .fly-icon,
+.mountain-card-item.active .card-item-action .fly-icon {
+  opacity: 1;
+  color: #FFE082;
+  animation: kineticArrowPulse 1.6s ease-in-out infinite;
+}
+
+/* 名山提梁令牌 */
+.diorama-tally-dock.tally-dock-mountains {
+  left: auto;
+  right: 10px;
+  top: 92px;
+  transform: scale(0.4) translateX(20px) rotateY(30deg);
+}
+
+.diorama-tally-dock.tally-dock-mountains .tally-slide-ribbon {
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%) translateX(-4px) scale(0.9);
+}
+
+.diorama-tally-dock.tally-dock-mountains:hover .tally-slide-ribbon {
+  transform: translateY(-50%) translateX(-10px) scale(1);
+}
+
+/* ==========================================================================
+   Chapter 1.4G: 【营造法式 · 实时高程探针微缩浮动屏】(Topographic Probe Floating HUD)
+   ========================================================================== */
+.diorama-probe-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  z-index: 98;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(14, 10, 8, 0.94) 0%, rgba(8, 16, 20, 0.94) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 14px rgba(212, 175, 55, 0.2);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  user-select: none;
+  min-width: 190px;
+  max-width: 260px;
+  transition: opacity 0.15s ease;
+}
+
+.probe-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding-bottom: 3px;
+}
+
+.probe-hud-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border: 1px solid #783214;
+  border-radius: 3px;
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  font-weight: bold;
+  color: #FFE082;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.probe-hud-alt {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: bold;
+  color: #FFE082;
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+}
+
+.probe-hud-title {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: 500;
+  color: #FFFDF9;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.probe-hud-coords {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  color: rgba(212, 175, 55, 0.75);
+}
+
+/* ==========================================================================
+   Chapter 1.5: 3D Scenic Immersion Stage (灵境画卷与预渲染安全视口)
+   ========================================================================== */
+.scenic-immersion-stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 40px 24px 40px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: radial-gradient(circle at center, rgba(14, 22, 36, 0.45) 0%, rgba(4, 8, 16, 0.94) 100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(1.04);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.45s;
+  will-change: transform, opacity;
+}
+
+.scenic-immersion-stage.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.scenic-photo-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.scenic-main-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  transition: transform 10s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease;
+  filter: brightness(0.78) contrast(1.06);
+}
+.scenic-immersion-stage:hover .scenic-main-photo {
+  transform: scale(1.06);
+}
+
+.scenic-vignette-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 40%, rgba(4, 8, 16, 0.85) 100%),
+              linear-gradient(to bottom, rgba(4, 8, 16, 0.75) 0%, transparent 20%, transparent 60%, rgba(4, 8, 16, 0.95) 100%);
+}
+
+.scenic-photo-caption-badge {
+  position: absolute;
+  left: 40px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(10, 16, 26, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--c-silk);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.scenic-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.scenic-location-tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 16, 26, 0.88);
+  backdrop-filter: blur(14px);
+  padding: 8px 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
+}
+
+.scenic-city-name {
+  font-family: var(--font-brush-bold), serif;
+  font-size: 18px;
+  color: var(--c-gold-bright);
+}
+
+.scenic-alt-tag {
+  font-size: 12px;
+  color: var(--c-silk-dim);
+}
+
+.scenic-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-right: 0;
+}
+
+.beast-summon-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, rgba(217, 56, 41, 0.9), rgba(180, 40, 30, 0.98));
+  border: 1.5px solid rgba(255, 215, 0, 0.75);
+  border-radius: 24px;
+  color: #FFF;
+  font-size: 13.5px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(217, 56, 41, 0.5);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.beast-summon-pill-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 28px rgba(217, 56, 41, 0.8), 0 0 16px rgba(255, 215, 0, 0.6);
+}
+
+.return-globe-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: rgba(10, 16, 26, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid var(--c-gold-leaf);
+  border-radius: 24px;
+  color: var(--c-gold-bright);
+  font-size: 13.5px;
+  font-family: var(--font-serif);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.return-globe-btn:hover {
+  background: var(--c-gold-bright);
+  color: #06090E;
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+}
+
+.scenic-poem-ribbon {
+  position: absolute;
+  left: 40px;
+  top: 100px;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 16px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.scenic-lore-card {
+  position: absolute;
+  right: 40px;
+  bottom: 24px;
+  width: 460px;
+  max-width: 40vw;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: rgba(10, 16, 26, 0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1.5px solid rgba(212, 175, 55, 0.6);
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.92), 0 0 32px rgba(212, 175, 55, 0.25);
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.scenic-ancient-title {
+  font-family: var(--font-brush-bold), serif;
+  font-size: 28px;
+  color: var(--c-gold-bright);
+  margin-bottom: 4px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 12px rgba(212, 175, 55, 0.5);
+}
+
+.scenic-modern-title {
+  font-size: 15px;
+  color: var(--c-silk-dim);
+  margin-bottom: 16px;
+}
+
+.scenic-dual-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.scenic-lore-block {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.scenic-lore-block.mythic-block {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.06);
+}
+.scenic-lore-block.geo-block {
+  border-color: rgba(56, 239, 125, 0.3);
+  background: rgba(56, 239, 125, 0.05);
+}
+
+.lore-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: bold;
+  color: var(--c-gold-bright);
+  margin-bottom: 4px;
+}
+
+.lore-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(240, 230, 215, 0.9);
+}
+
+.geo-meta-pill {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(56, 239, 125, 0.15);
+  border: 1px solid rgba(56, 239, 125, 0.4);
+  font-size: 11.5px;
+  color: #72F6A3;
+}
+
+.scenic-thumbnails-strip {
+  margin-bottom: 16px;
+}
+.thumb-label {
+  display: block;
+  font-size: 12px;
+  color: var(--c-silk-dim);
+  margin-bottom: 8px;
+}
+.thumb-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.thumb-item {
+  width: 68px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+.thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thumb-item.active {
+  border-color: var(--c-gold-bright);
+  box-shadow: 0 0 12px var(--c-gold-glow);
+  transform: scale(1.05);
+}
+
+.scenic-action-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.scenic-stamp-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(217, 56, 41, 0.2), rgba(217, 56, 41, 0.35));
+  border: 1.5px solid var(--c-cinnabar);
+  border-radius: 24px;
+  color: #FFA599;
+  font-size: 13.5px;
+  font-family: var(--font-serif);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scenic-stamp-btn:hover {
+  background: var(--c-cinnabar);
+  color: #FFF;
+  box-shadow: 0 0 20px rgba(217, 56, 41, 0.6);
+  transform: translateY(-2px);
+}
+.scenic-stamp-btn.stamped {
+  background: rgba(56, 239, 125, 0.15);
+  border-color: #38EF7D;
+  color: #72F6A3;
+}
+
+.scenic-seal-box {
+  width: 48px;
+  height: 48px;
+  border: 2px dashed rgba(217, 56, 41, 0.4);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(217, 56, 41, 0.4);
+  font-size: 22px;
+}
+.scenic-seal-box.stamped {
+  border-style: solid;
+  border-color: var(--c-cinnabar);
+  color: var(--c-cinnabar);
+  background: rgba(217, 56, 41, 0.1);
+  box-shadow: 0 0 16px rgba(217, 56, 41, 0.4);
+}
+
+/* ==========================================================================
+   0. 统一左侧山海文化名片栏 (.hero-unified-cultural-card) - 智能升降玻璃古风名片
+   ========================================================================== */
+.hero-unified-cultural-card {
+  position: absolute;
+  left: 24px;
+  top: 88px;
+  bottom: 24px;
+  width: 290px;
+  max-height: calc(100vh - 112px);
+  background: linear-gradient(165deg, rgba(6, 16, 12, 0.94), rgba(3, 10, 8, 0.98));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.2px solid rgba(255, 215, 0, 0.75);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9), 0 0 24px rgba(255, 215, 0, 0.2);
+  z-index: 45;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.25) transparent;
+
+  /* 默认收起隐形，0 视界遮挡 */
+  transform: translateX(-340px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 激活展开态 */
+.hero-unified-cultural-card.active {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hero-unified-cultural-card.pulse-focus {
+  animation: unifiedCardPulse 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes unifiedCardPulse {
+  0% { transform: scale(1); border-color: rgba(255, 215, 0, 0.75); }
+  40% { transform: scale(1.02); border-color: rgba(255, 235, 59, 1); box-shadow: 0 0 36px rgba(255, 215, 0, 0.55); }
+  100% { transform: scale(1); border-color: rgba(255, 215, 0, 0.75); }
+}
+
+.cultural-card-close-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #FFE082;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cultural-card-close-btn:hover {
+  background: rgba(217, 56, 41, 0.8);
+  border-color: #FFA599;
+  color: #FFF;
+  transform: scale(1.1);
+}
+
+/* 1. 顶部朱砂节气与神兽标头 */
+.cultural-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  padding-bottom: 8px;
+}
+
+.header-solar-seal {
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #FFF8E1;
+  background: linear-gradient(135deg, #C62828, #8E0000);
+  border: 1px solid #FFE082;
+  border-radius: 6px;
+  padding: 2px 8px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.4);
+}
+
+.header-guardian-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-guardian-badge .guardian-icon {
+  font-size: 14px;
+}
+
+.header-guardian-badge .guardian-name {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  color: #FFE082;
+  font-weight: bold;
+}
+
+/* 2. 标题区 */
+.cultural-titles-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cultural-ancient-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #FFFDE7 0%, #FFE082 50%, #FFB300 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 12px rgba(255, 213, 79, 0.35);
+}
+
+.cultural-modern-title {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  color: #A5D6A7;
+  letter-spacing: 0.4px;
+}
+
+/* 3. 实景风光视窗 (16:9) */
+.cultural-photo-frame {
+  position: relative;
+  width: 100%;
+  height: 125px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.cultural-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.hero-unified-cultural-card:hover .cultural-photo-img {
+  transform: scale(1.05);
+}
+
+.cultural-photo-caption {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+
+/* ==========================================================================
+   Chapter 1.5: 大宋宣和「玄黑泥金」文人案卷面板 (DestinationScrollDrawer)
+   ========================================================================== */
+.scholar-scroll-drawer-root {
+  position: fixed;
+  top: 88px;
+  left: 28px;
+  right: auto;
+  width: 440px;
+  height: calc(100vh - 110px);
+  max-height: 820px;
+  z-index: 95;
+  border-radius: 20px;
+  box-sizing: border-box;
+  transform: translateX(-118%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  background: linear-gradient(155deg, rgba(8, 14, 22, 0.95) 0%, rgba(13, 20, 30, 0.92) 50%, rgba(5, 9, 15, 0.97) 100%);
+  backdrop-filter: blur(28px) saturate(190%);
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.22), inset 0 1px 1px rgba(255, 235, 150, 0.35);
+  color: #FFFDF9;
+}
+
+.scholar-scroll-drawer-root.active {
+  transform: translateX(0%);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.panel-fx-webgl-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 1. 卷轴右侧斜悬羊脂白玉挂坠与朱砂真丝流苏 */
+.scroll-hanging-tassel-cluster {
+  position: absolute;
+  right: -20px;
+  left: auto;
+  top: 36px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  transform-origin: top center;
+  animation: tasselSway 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes tasselSway {
+  0% { transform: rotate(-3deg); }
+  50% { transform: rotate(2.5deg); }
+  100% { transform: rotate(-3deg); }
+}
+
+.tassel-jade-ring {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FCFAF2 30%, #E8DFCE 80%, #C4A77D 100%);
+  border: 1.2px solid #D4AF37;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 0 8px rgba(255, 223, 120, 0.6);
+  position: relative;
+}
+
+.tassel-silk-knot {
+  width: 8px;
+  height: 10px;
+  background: #C8322B;
+  border-radius: 2px;
+  margin-top: -2px;
+}
+
+.tassel-cinnabar-fringes {
+  display: flex;
+  gap: 2.5px;
+  margin-top: -1px;
+}
+
+.fringe-strand {
+  width: 2px;
+  background: linear-gradient(to bottom, #C8322B 0%, #8A1C16 80%, #D4AF37 100%);
+  border-radius: 1px;
+}
+.fringe-strand.strand-1 { height: 38px; }
+.fringe-strand.strand-2 { height: 46px; }
+.fringe-strand.strand-3 { height: 34px; }
+
+/* 2. 主体手卷内部容器 */
+.scholar-scroll-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.scholar-scroll-inner::-webkit-scrollbar {
+  display: none;
+}
+
+/* 顶栏工具条 */
+.scroll-top-utility-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+/* 宣和御府泥金徽记 (大字号与纯金刺绣微光) */
+.scroll-imperial-crest-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.28) 0%, rgba(20, 14, 8, 0.6) 100%);
+  border: 1.2px solid #FFDF78;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 14px rgba(212, 175, 55, 0.25);
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.scroll-imperial-crest-tag .crest-gold-icon {
+  font-size: 14px;
+}
+
+.scroll-imperial-crest-tag .crest-gold-title {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1.2px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFE082 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.scroll-imperial-crest-tag .crest-spark-dot {
+  font-size: 10px;
+  color: #FFDF78;
+  animation: sparkTwinkle 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes sparkTwinkle {
+  0% { opacity: 0.4; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+
+/* 状态指示符 (锦缎金印微章) */
+.scroll-seal-status-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-family: var(--font-serif);
+  padding: 3px 10px;
+  border-radius: 14px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.scroll-seal-status-tag.unstamped {
+  background: linear-gradient(135deg, rgba(200, 40, 30, 0.22) 0%, rgba(80, 15, 10, 0.45) 100%);
+  border: 1px solid rgba(255, 120, 100, 0.55);
+  color: #FFCDD2;
+  box-shadow: 0 0 10px rgba(200, 40, 30, 0.25);
+}
+
+.scroll-seal-status-tag.unstamped .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FF5252;
+  box-shadow: 0 0 8px #FF5252;
+  animation: sealDotPulse 1.8s ease-in-out infinite alternate;
+}
+
+.scroll-seal-status-tag.stamped {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.35) 0%, rgba(120, 90, 15, 0.5) 100%);
+  border: 1px solid #FFD54F;
+  color: #FFFDF9;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+}
+
+.scroll-seal-status-tag.stamped .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FFDF78;
+  box-shadow: 0 0 10px #FFDF78;
+}
+
+@keyframes sealDotPulse {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+.scroll-close-talisman-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.2px solid rgba(212, 175, 55, 0.45);
+  border-radius: 50%;
+  color: #FFDF78;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.scroll-close-talisman-btn:hover {
+  background: #C8322B;
+  color: #FFF;
+  border-color: #FFD54F;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 0 14px rgba(200, 50, 43, 0.7);
+}
+
+/* 卷首非对称题额 */
+.scroll-header-cluster {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* 节气朱砂方印 */
+.header-solar-cinnabar-seal {
+  width: 34px;
+  height: 40px;
+  padding: 2px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #D32F2F 0%, #A51D18 100%);
+  border: 1.5px solid #FFD54F;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(200, 40, 30, 0.5), 0 0 10px rgba(255, 213, 79, 0.4);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.solar-seal-inner-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 213, 79, 0.6);
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  box-sizing: border-box;
+  padding: 1px 0;
+}
+
+.solar-char-top, .solar-char-bot {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 13px;
+  font-weight: bold;
+  color: #FFFDF9;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.header-titles-pack {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-ancient-banner {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ancient-script-title {
+  margin: 0;
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 24px;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5E6C8 55%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.35);
+}
+
+.ancient-glow-accent {
+  font-size: 12px;
+  color: #FFDF78;
+}
+
+/* 严整单行地理说明 (绝不折行) */
+.header-modern-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 3px;
+}
+
+.sub-location-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sub-city-pin {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.marquee-viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.marquee-viewport.has-overflow {
+  mask-image: linear-gradient(to right, black 0%, black 82%, transparent 98%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black 82%, transparent 98%);
+}
+
+.sub-city-name {
+  display: inline-block;
+  font-size: 12px;
+  color: rgba(255, 253, 249, 0.95);
+  font-family: var(--font-serif);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  will-change: transform;
+}
+
+.sub-city-name.is-scrolling {
+  animation: subCityPingPong var(--marquee-duration, 6s) cubic-bezier(0.42, 0.0, 0.58, 1.0) infinite alternate;
+}
+
+@keyframes subCityPingPong {
+  0%, 20% { transform: translateX(0); }
+  80%, 100% { transform: translateX(calc(-1 * var(--marquee-dist, 35px))); }
+}
+
+.sub-region-pill {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: bold;
+  flex-shrink: 0;
+  white-space: nowrap;
+  background: rgba(212, 175, 55, 0.18);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #FFDF78;
+}
+
+/* 卷心：宋画绢帛风光视口 (四角金包角) */
+.scroll-scenic-album-viewport {
+  position: relative;
+  width: 100%;
+  height: 148px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 16px rgba(212, 175, 55, 0.15);
+}
+
+.album-silk-matting {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.gallery-album-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-scenic-album-viewport:hover .gallery-album-img {
+  transform: scale(1.06);
+}
+
+.album-silk-vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 40%, transparent 70%, rgba(0, 0, 0, 0.3) 100%);
+}
+
+.album-corner-flourish {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #FFDF78;
+  pointer-events: none;
+}
+.album-corner-flourish.top-left { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+.album-corner-flourish.top-right { top: 6px; right: 6px; border-left: none; border-bottom: none; }
+.album-corner-flourish.bottom-left { bottom: 6px; left: 6px; border-right: none; border-top: none; }
+.album-corner-flourish.bottom-right { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+
+.album-floating-caption {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  font-size: 10.5px;
+  color: #FFFDF9;
+}
+
+/* 卷腰：错落经折四大章回古卷 */
+.scroll-chapter-tabs-deck {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.chapter-tab-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  background: rgba(14, 22, 34, 0.75);
+  border: 1px solid rgba(139, 174, 170, 0.35);
+  border-radius: 8px;
+  color: #E8DFCE;
+  font-size: 11px;
+  font-family: var(--font-serif);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.chapter-tab-pill:hover {
+  background: rgba(139, 174, 170, 0.22);
+  border-color: rgba(229, 195, 120, 0.75);
+  color: #FFFDF9;
+  transform: translateY(-1px);
+}
+
+.chapter-tab-pill.active {
+  background: linear-gradient(135deg, rgba(139, 174, 170, 0.35) 0%, rgba(9, 21, 28, 0.85) 100%);
+  border-color: #8BAEAA;
+  color: #FFFDF9;
+  font-weight: bold;
+  box-shadow: 0 4px 14px rgba(139, 174, 170, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.chapter-tab-pill .tab-glyph {
+  font-size: 13px;
+}
+
+/* 卷腹：动态章回详情视窗 (严格定高 156px，彻底消灭滚动条与文字截断) */
+.scroll-chapter-content-body {
+  height: 156px;
+  min-height: 156px;
+  max-height: 156px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.chapter-pane {
+  display: none;
+  height: 100%;
+  animation: paneFadeIn 0.28s ease forwards;
+}
+
+.chapter-pane.active {
+  display: block;
+}
+
+@keyframes paneFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 共通宣和古卷容器基底 */
+.geo-atlas-scroll,
+.poem-calligraphy-scroll,
+.beast-dossier-scroll,
+.history-chronicle-scroll {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 100%;
+  height: 156px;
+  padding: 8px 14px 6px 14px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(9, 21, 28, 0.96) 0%, rgba(14, 29, 36, 0.94) 52%, rgba(7, 18, 23, 0.98) 100%),
+    radial-gradient(circle at 18% 22%, rgba(139, 174, 170, 0.12), transparent 45%);
+  border: 1px solid rgba(139, 174, 170, 0.38);
+  border-radius: 6px 16px 6px 16px;
+  box-shadow:
+    inset 0 0 0 1px rgba(247, 239, 226, 0.05),
+    inset 10px 0 24px rgba(4, 12, 16, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.55);
+}
+
+/* 1. 坤舆地纪视窗 */
+.geo-atlas-scroll {
+  --geo-ink: #FFFDF9;
+  --geo-muted: #B8C7C4;
+  --geo-celadon: #8BAEAA;
+  --geo-gold: #E5C378;
+}
+
+.geo-folio-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.geo-folio-heading-copy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.geo-folio-kicker {
+  color: #FFFDF9;
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(229, 195, 120, 0.25);
+  white-space: nowrap;
+}
+
+.geo-folio-subtitle {
+  color: var(--geo-muted);
+  font-family: var(--font-serif);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.geo-astrolabe-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.geo-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1.5px 6px;
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  font-weight: 500;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.geo-pill.coords-pill {
+  background: rgba(229, 195, 120, 0.15);
+  border: 1px solid rgba(229, 195, 120, 0.45);
+  color: #FFE082;
+}
+
+.geo-folio-rule {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  margin: 4px 0 5px;
+  background: linear-gradient(90deg, rgba(139, 174, 170, 0.7), rgba(229, 195, 120, 0.35) 45%, transparent 95%);
+}
+
+.geo-folio-rule span {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 16px;
+  height: 3px;
+  background: var(--geo-celadon);
+  border-radius: 2px;
+}
+
+.geo-folio-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+.geo-season-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: #C8E6C9;
+  background: rgba(139, 174, 170, 0.14);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(139, 174, 170, 0.3);
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.geo-season-icon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.geo-season-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.geo-lore-text {
+  margin: 0;
+  color: #FFFDF9;
+  font-family: 'Noto Serif SC', 'Songti SC', STSong, serif;
+  font-size: 11px;
+  line-height: 1.46;
+  letter-spacing: 0.02em;
+  display: block;
+  overflow: visible;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.geo-colophon-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  margin-top: 2px;
+  border-top: 1px dashed rgba(139, 174, 170, 0.22);
+}
+
+.geo-geology-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.geo-rock-icon {
+  font-size: 11px;
+}
+
+.geo-rock-desc {
+  color: var(--geo-gold);
+  font-family: var(--font-serif);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.geo-seal-tag {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  background: rgba(139, 174, 170, 0.18);
+  border: 1px solid rgba(139, 174, 170, 0.5);
+  border-radius: 2px;
+  color: #D2ECE8;
+  font-family: var(--font-serif);
+  font-size: 9px;
+}
+
+/* 2. 仙咏集视窗 */
+.poem-calligraphy-scroll {
+  --poem-ink: #FFFDF9;
+  --poem-muted: #B8C7C4;
+  --poem-celadon: #8BAEAA;
+}
+
+.poem-folio-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.poem-folio-heading-copy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.poem-folio-kicker {
+  color: #FFFDF9;
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(229, 195, 120, 0.25);
+}
+
+.poem-folio-subtitle {
+  color: var(--poem-muted);
+  font-family: var(--font-serif);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.poem-folio-index-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.poem-folio-index {
+  color: var(--poem-celadon);
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.poem-writing-state {
+  color: #FF8A80;
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  font-weight: bold;
+}
+
+.poem-folio-rule {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  margin: 4px 0 6px;
+  background: linear-gradient(90deg, rgba(139, 174, 170, 0.7), rgba(229, 195, 120, 0.35) 45%, transparent 95%);
+}
+
+.poem-folio-rule span {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 16px;
+  height: 3px;
+  background: var(--poem-celadon);
+  border-radius: 2px;
+}
+
+.poem-folio-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2px 0;
+}
+
+.poem-reading-rail {
+  position: absolute;
+  left: -8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(139, 174, 170, 0.2);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.poem-reading-rail span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #FFD54F;
+  transform-origin: top center;
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+
+.poem-horizontal-verses {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.poem-verse-line {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0px;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  line-height: 1.35;
+}
+
+/* 核心：两层重叠字模，彻底消除字符并排重复！ */
+.poem-char {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.05em;
+  height: 1.35em;
+}
+
+.poem-char .char-ink-guide {
+  grid-area: 1 / 1;
+  font-family: var(--font-brush-bold), 'Noto Serif SC', serif;
+  font-size: clamp(14px, 3.8vw, 15.5px);
+  font-weight: 700;
+  color: rgba(255, 253, 249, 0.22);
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+.poem-char .char-ink-mask {
+  grid-area: 1 / 1;
+  font-family: var(--font-brush-bold), 'Noto Serif SC', serif;
+  font-size: clamp(14px, 3.8vw, 15.5px);
+  font-weight: 700;
+  color: #FFFDF9;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  opacity: var(--ink-opacity, 0);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.35s ease;
+  will-change: opacity, text-shadow;
+}
+
+.poem-char.is-written .char-ink-mask {
+  opacity: 1;
+  color: #FFFDF9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.poem-char.is-inking .char-ink-mask {
+  opacity: 1;
+  color: #FFE082;
+  text-shadow: 0 0 10px #FFD54F, 0 0 20px rgba(255, 213, 79, 0.75), 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.poem-colophon-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  margin-top: 3px;
+  border-top: 1px dashed rgba(139, 174, 170, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.poem-colophon-inline.is-visible,
+.poem-calligraphy-scroll.is-complete .poem-colophon-inline {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.poem-colophon-copy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.poem-source {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: #FFFDF9;
+}
+
+.poem-source-note {
+  font-family: var(--font-serif);
+  font-size: 9px;
+  color: #B8C7C4;
+}
+
+.colophon-cinnabar-seal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 20px;
+  background: linear-gradient(135deg, #D32F2F 0%, #A51D18 100%);
+  border: 1px solid #FFD54F;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(200, 40, 30, 0.5);
+}
+
+.seal-char-2x2 {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 9.5px;
+  font-weight: bold;
+  color: #FFFDF9;
+  line-height: 1;
+}
+
+.poem-replay-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1.5px 7px;
+  background: rgba(229, 195, 120, 0.18);
+  border: 1px solid rgba(229, 195, 120, 0.5);
+  border-radius: 4px;
+  color: #FFE082;
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.poem-replay-button:hover {
+  background: rgba(229, 195, 120, 0.35);
+  border-color: #FFD54F;
+  transform: scale(1.04);
+}
+
+.poem-page-mark {
+  display: none;
+}
+
+/* 3. 镇境山尊视窗 */
+.beast-dossier-scroll {
+  --beast-ink: #FFFDF9;
+  --beast-muted: #B8C7C4;
+  --beast-theme: #8BAEAA;
+  --beast-theme-bg: rgba(139, 174, 170, 0.15);
+  --beast-theme-border: rgba(139, 174, 170, 0.4);
+}
+
+/* 五行国色定制映射 */
+.beast-dossier-scroll[data-element="wood"],
+.beast-dossier-scroll[data-element="木"] {
+  --beast-theme: #508A70;
+  --beast-theme-bg: rgba(80, 138, 112, 0.2);
+  --beast-theme-border: rgba(80, 138, 112, 0.5);
+}
+.beast-dossier-scroll[data-element="fire"],
+.beast-dossier-scroll[data-element="火"] {
+  --beast-theme: #C8322B;
+  --beast-theme-bg: rgba(200, 50, 43, 0.2);
+  --beast-theme-border: rgba(200, 50, 43, 0.5);
+}
+.beast-dossier-scroll[data-element="earth"],
+.beast-dossier-scroll[data-element="土"] {
+  --beast-theme: #D4A045;
+  --beast-theme-bg: rgba(212, 160, 69, 0.2);
+  --beast-theme-border: rgba(212, 160, 69, 0.5);
+}
+.beast-dossier-scroll[data-element="gold"],
+.beast-dossier-scroll[data-element="metal"],
+.beast-dossier-scroll[data-element="金"] {
+  --beast-theme: #E5C378;
+  --beast-theme-bg: rgba(229, 195, 120, 0.2);
+  --beast-theme-border: rgba(229, 195, 120, 0.5);
+}
+.beast-dossier-scroll[data-element="water"],
+.beast-dossier-scroll[data-element="水"] {
+  --beast-theme: #4A89A6;
+  --beast-theme-bg: rgba(74, 137, 166, 0.2);
+  --beast-theme-border: rgba(74, 137, 166, 0.5);
+}
+
+.beast-dossier-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.beast-heading-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.beast-totem-avatar {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--beast-theme-bg), transparent 75%);
+  border: 1.2px solid var(--beast-theme);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px var(--beast-theme-bg);
+}
+
+.beast-totem-glyph {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.beast-element-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -4px;
+  padding: 0 3px;
+  font-size: 8.5px;
+  font-family: var(--font-serif);
+  font-weight: bold;
+  background: var(--beast-theme);
+  color: #FFFDF9;
+  border-radius: 3px;
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.beast-title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.beast-hero-name {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #FFFDF9;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 10px var(--beast-theme);
+  white-space: nowrap;
+}
+
+.beast-hero-title {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: var(--beast-muted);
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.beast-talisman-mark {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.beast-talisman-tag {
+  padding: 1.5px 7px;
+  background: var(--beast-theme-bg);
+  border: 1px solid var(--beast-theme);
+  border-radius: 4px;
+  color: #FFFDF9;
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.beast-dossier-rule {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  margin: 4px 0 5px;
+  background: linear-gradient(90deg, var(--beast-theme), rgba(229, 195, 120, 0.35) 45%, transparent 95%);
+}
+
+.beast-dossier-rule span {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 16px;
+  height: 3px;
+  background: var(--beast-theme);
+  border-radius: 2px;
+}
+
+.beast-dossier-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+.beast-domain-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: #FFFDF9;
+  background: var(--beast-theme-bg);
+  padding: 1.5px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--beast-theme-border);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.beast-domain-row .domain-label {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: var(--beast-theme);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.beast-domain-row .domain-val {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  color: #FFFDF9;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.beast-quote-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.beast-desc-text {
+  margin: 0;
+  font-family: 'Noto Serif SC', 'Songti SC', STSong, serif;
+  font-size: 11px;
+  line-height: 1.46;
+  color: rgba(255, 253, 249, 0.95);
+  letter-spacing: 0.02em;
+  display: block;
+  overflow: visible;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.beast-dossier-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  margin-top: 3px;
+  border-top: 1px dashed rgba(139, 174, 170, 0.22);
+}
+
+.beast-colophon-source {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: var(--beast-muted);
+}
+
+.beast-seal-tag {
+  padding: 1px 6px;
+  background: var(--beast-theme-bg);
+  border: 1px solid var(--beast-theme);
+  border-radius: 2px;
+  color: #FFFDF9;
+  font-family: var(--font-serif);
+  font-size: 9px;
+}
+
+/* 4. 人文志视窗 */
+.history-chronicle-scroll {
+  --hist-ink: #FFFDF9;
+  --hist-muted: #B8C7C4;
+  --hist-ochre: #C49050;
+}
+
+.history-folio-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.history-heading-copy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.history-folio-kicker {
+  color: #FFFDF9;
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(196, 144, 80, 0.35);
+}
+
+.history-folio-subtitle {
+  color: var(--hist-muted);
+  font-family: var(--font-serif);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.history-seal-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5px 7px;
+  background: rgba(196, 144, 80, 0.2);
+  border: 1px solid rgba(196, 144, 80, 0.6);
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.history-seal-char {
+  font-family: var(--font-serif);
+  font-size: 9.5px;
+  font-weight: bold;
+  color: #F6E2C2;
+  letter-spacing: 0.08em;
+}
+
+.history-folio-rule {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  margin: 4px 0 5px;
+  background: linear-gradient(90deg, rgba(196, 144, 80, 0.7), rgba(229, 195, 120, 0.35) 45%, transparent 95%);
+}
+
+.history-folio-rule span {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 16px;
+  height: 3px;
+  background: var(--hist-ochre);
+  border-radius: 2px;
+}
+
+.history-folio-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+.history-era-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: #FFE082;
+  background: rgba(196, 144, 80, 0.16);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(196, 144, 80, 0.35);
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.history-era-icon {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.history-era-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.history-content-text {
+  margin: 0;
+  color: #FFFDF9;
+  font-family: 'Noto Serif SC', 'Songti SC', STSong, serif;
+  font-size: 11px;
+  line-height: 1.46;
+  letter-spacing: 0.02em;
+  display: block;
+  overflow: visible;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.history-colophon-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  margin-top: 2px;
+  border-top: 1px dashed rgba(196, 144, 80, 0.22);
+}
+
+.history-source-note {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: var(--hist-muted);
+}
+
+.history-vol-tag {
+  padding: 1px 6px;
+  background: rgba(200, 50, 43, 0.2);
+  border: 1px solid rgba(200, 50, 43, 0.55);
+  border-radius: 2px;
+  color: #FFCDD2;
+  font-family: var(--font-serif);
+  font-size: 9px;
+}
+
+/* 卷底：倾斜朱砂大方玺与三大仙符 */
+.scroll-footer-action-deck {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  flex-shrink: 0;
+}
+
+/* 经典 2×2 汉印九叠朱砂方玺 */
+.scroll-seal-stamp-pod {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cinnabar-square-seal {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  padding: 3px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #D32F2F 0%, #A51D18 100%);
+  color: #FFFDF9;
+  border-radius: 6px;
+  border: 2px solid #E5C158;
+  transform: rotate(-3deg);
+  box-shadow: 0 6px 18px rgba(180, 30, 20, 0.6), 0 0 14px rgba(229, 193, 88, 0.45);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cinnabar-square-seal:hover {
+  transform: rotate(0deg) scale(1.06);
+  box-shadow: 0 8px 24px rgba(200, 40, 30, 0.8), 0 0 20px rgba(255, 215, 0, 0.85);
+}
+
+.cinnabar-square-seal.stamped {
+  background: linear-gradient(135deg, #8A1C16 0%, #5E0F0B 100%);
+  border-color: #D4AF37;
+}
+
+.seal-inner-bordered-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(255, 223, 120, 0.55);
+  border-radius: 3px;
+  box-sizing: border-box;
+  padding: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.seal-2x2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  height: 100%;
+  gap: 1px;
+  align-items: center;
+  justify-items: center;
+}
+
+.seal-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  width: 100%;
+}
+
+.seal-char-glyph {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 14.5px;
+  font-weight: 900;
+  line-height: 1;
+  color: #FFFDF9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.seal-status-caption {
+  margin-top: 2px;
+  text-align: center;
+}
+
+.seal-stamp-label {
+  font-size: 9px;
+  font-family: var(--font-serif);
+  letter-spacing: 0.5px;
+  color: #E5C158;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.stamp-impact-shake {
+  animation: stampImpact 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes stampImpact {
+  10%, 90% { transform: translate3d(-2px, 0, 0) scale(1.1); }
+  20%, 80% { transform: translate3d(3px, 0, 0) scale(1.12); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0) scale(1.1); }
+  40%, 60% { transform: translate3d(3px, 0, 0) scale(1.05); }
+}
+
+/* 三大御制仙令法宝金符 */
+.scroll-talisman-actions-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.talisman-pill-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 7px 4px 6px 4px;
+  border-radius: 8px;
+  font-family: var(--font-serif);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.talisman-corner {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1px solid #FFDF78;
+  pointer-events: none;
+  opacity: 0.7;
+}
+.talisman-corner.c-tl { top: 2px; left: 2px; border-right: none; border-bottom: none; }
+.talisman-corner.c-tr { top: 2px; right: 2px; border-left: none; border-bottom: none; }
+.talisman-corner.c-bl { bottom: 2px; left: 2px; border-right: none; border-top: none; }
+.talisman-corner.c-br { bottom: 2px; right: 2px; border-left: none; border-top: none; }
+
+.talisman-icon-aura {
+  font-size: 15px;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.4));
+}
+
+.talisman-meta-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.talisman-btn-name {
+  font-family: var(--font-brush-bold), var(--font-serif);
+  font-size: 11.5px;
+  font-weight: bold;
+  letter-spacing: 0.8px;
+  color: #FFFDF9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.talisman-btn-sub {
+  font-size: 8.5px;
+  letter-spacing: 0.5px;
+  opacity: 0.82;
+  color: #FFDF78;
+}
+
+.talisman-pill-btn.btn-scenic {
+  background: linear-gradient(145deg, rgba(20, 35, 60, 0.85) 0%, rgba(10, 18, 32, 0.92) 100%);
+  border: 1.2px solid rgba(100, 160, 255, 0.5);
+}
+.talisman-pill-btn.btn-scenic:hover {
+  border-color: #90CAF9;
+  box-shadow: 0 6px 18px rgba(30, 80, 180, 0.45), 0 0 14px rgba(100, 180, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.talisman-pill-btn.btn-beast {
+  background: linear-gradient(145deg, rgba(16, 45, 38, 0.85) 0%, rgba(8, 24, 20, 0.92) 100%);
+  border: 1.2px solid rgba(72, 187, 120, 0.5);
+}
+.talisman-pill-btn.btn-beast:hover {
+  border-color: #81C784;
+  box-shadow: 0 6px 18px rgba(30, 120, 80, 0.45), 0 0 14px rgba(72, 187, 120, 0.4);
+  transform: translateY(-2px);
+}
+
+.talisman-pill-btn.btn-stamp {
+  background: linear-gradient(145deg, rgba(60, 20, 20, 0.85) 0%, rgba(32, 10, 10, 0.92) 100%);
+  border: 1.2px solid rgba(255, 100, 90, 0.5);
+}
+.talisman-pill-btn.btn-stamp:hover {
+  border-color: #FF8A80;
+  box-shadow: 0 6px 18px rgba(180, 30, 20, 0.45), 0 0 14px rgba(255, 100, 90, 0.4);
+  transform: translateY(-2px);
+}
+.talisman-pill-btn.btn-stamp.stamped {
+  background: linear-gradient(145deg, rgba(138, 28, 22, 0.9) 0%, rgba(80, 14, 10, 0.95) 100%);
+  border-color: #FFD54F;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.45);
+}
